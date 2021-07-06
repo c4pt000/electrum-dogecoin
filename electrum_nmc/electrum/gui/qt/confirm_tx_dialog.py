@@ -276,6 +276,6 @@ class ConfirmTxDialog(TxEditor, WindowModalDialog):
         elif feerate > FEERATE_WARNING_HIGH_FEE / 1000:
             self.toggle_send_button(True,
                                     message=_('Warning') + ': ' + _("The fee for this transaction seems unusually high.")
-                                            + f'\n(feerate: {feerate:.2f} swartz/byte)')
+                                            + f'\n(feerate: {feerate:.2f} noise/byte)')
         else:
             self.toggle_send_button(True)

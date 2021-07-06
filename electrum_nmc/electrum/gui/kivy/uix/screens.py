@@ -136,7 +136,7 @@ class HistoryScreen(CScreen):
             message = tx_item['label']
             fee_msat = tx_item['fee_msat']
             fee = int(fee_msat/1000) if fee_msat else None
-            fee_text = '' if fee is None else 'fee: %d swartz'%fee
+            fee_text = '' if fee is None else 'fee: %d noise'%fee
         else:
             tx_hash = tx_item['txid']
             conf = tx_item['confirmations']
@@ -147,7 +147,7 @@ class HistoryScreen(CScreen):
             icon = "atlas://electrum_nmc/electrum/gui/kivy/theming/light/" + TX_ICONS[status]
             message = tx_item['label'] or tx_hash
             fee = tx_item['fee_sat']
-            fee_text = '' if fee is None else 'fee: %d swartz'%fee
+            fee_text = '' if fee is None else 'fee: %d noise'%fee
         ri = {}
         ri['screen'] = self
         ri['key'] = key
@@ -393,7 +393,7 @@ class SendScreen(CScreen):
                        + f' ({fee_ratio*100:.2f}% of amount)')
         elif feerate > FEERATE_WARNING_HIGH_FEE / 1000:
             msg.append(_('Warning') + ': ' + _("The fee for this transaction seems unusually high.")
-                       + f' (feerate: {feerate:.2f} swartz/byte)')
+                       + f' (feerate: {feerate:.2f} noise/byte)')
         self.app.protected('\n'.join(msg), self.send_tx, (tx,))
 
     def send_tx(self, tx, password):

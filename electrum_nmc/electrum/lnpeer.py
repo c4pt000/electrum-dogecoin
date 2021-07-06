@@ -1382,8 +1382,8 @@ class Peer(Logger):
                     # Thus, automated force-closing might not be a good idea
                     # Maybe we should display something in the GUI instead
                     self.logger.warning(
-                        f"({chan.get_id_for_log()}) feerate is {chan_feerate} swartz/kw, "
-                        f"current recommended feerate is {feerate_per_kw} swartz/kw, consider force closing!")
+                        f"({chan.get_id_for_log()}) feerate is {chan_feerate} noise/kw, "
+                        f"current recommended feerate is {feerate_per_kw} noise/kw, consider force closing!")
             return
         chan_fee = chan.get_next_feerate(REMOTE)
         if feerate_per_kw < chan_fee / 2:

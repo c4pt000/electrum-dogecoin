@@ -1772,7 +1772,7 @@ command_options = {
     'nocheck':     (None, "Do not verify aliases"),
     'imax':        (None, "Maximum number of inputs"),
     'fee':         ("-f", "Transaction fee (absolute, in NMC)"),
-    'feerate':     (None, "Transaction fee rate (in swartz/byte)"),
+    'feerate':     (None, "Transaction fee rate (in noise/byte)"),
     'from_addr':   ("-F", "Source address (must be a wallet address; use sweep to spend from non-wallet address)."),
     'from_coins':  (None, "Source coins (must be in wallet; use sweep to spend from non-wallet address)."),
     'change_addr': ("-c", "Change address. Default is a spare address, or the source address if it's not in the wallet"),

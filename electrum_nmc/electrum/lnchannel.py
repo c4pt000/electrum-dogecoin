@@ -747,9 +747,9 @@ class Channel(AbstractChannel):
             if amount_msat <= 0:
                 raise PaymentFailure("HTLC value must be positive")
             if amount_msat < chan_config.htlc_minimum_msat:
-                raise PaymentFailure(f'HTLC value too small: {amount_msat} mswartz')
+                raise PaymentFailure(f'HTLC value too small: {amount_msat} mnoise')
         if amount_msat > LN_MAX_HTLC_VALUE_MSAT and not self._ignore_max_htlc_value:
-            raise PaymentFailure(f"HTLC value over protocol maximum: {amount_msat} > {LN_MAX_HTLC_VALUE_MSAT} mswartz")
+            raise PaymentFailure(f"HTLC value over protocol maximum: {amount_msat} > {LN_MAX_HTLC_VALUE_MSAT} mnoise")
 
         # check proposer can afford htlc
         max_can_send_msat = self.available_to_spend(htlc_proposer, strict=strict)
@@ -770,9 +770,9 @@ class Channel(AbstractChannel):
         # check "max_htlc_value_in_flight_msat"
         current_htlc_sum = htlcsum(self.hm.htlcs_by_direction(htlc_receiver, direction=RECEIVED, ctn=ctn).values())
         if current_htlc_sum + amount_msat > chan_config.max_htlc_value_in_flight_msat:
-            raise PaymentFailure(f'HTLC value sum (sum of pending htlcs: {current_htlc_sum/1000} swartz '
-                                 f'plus new htlc: {amount_msat/1000} swartz) '
-                                 f'would exceed max allowed: {chan_config.max_htlc_value_in_flight_msat/1000} swartz')
+            raise PaymentFailure(f'HTLC value sum (sum of pending htlcs: {current_htlc_sum/1000} noise '
+                                 f'plus new htlc: {amount_msat/1000} noise) '
+                                 f'would exceed max allowed: {chan_config.max_htlc_value_in_flight_msat/1000} noise')
 
     def can_pay(self, amount_msat: int, *, check_frozen=False) -> bool:
         """Returns whether we can add an HTLC of given value."""
@@ -1282,7 +1282,7 @@ class Channel(AbstractChannel):
         remainder = sender_balance_msat - sender_reserve_msat - ctx_fees_msat[sender]
         if remainder < 0:
             raise Exception(f"Cannot update_fee. {sender} tried to update fee but they cannot afford it. "
-                            f"Their balance would go below reserve: {remainder} mswartz missing.")
+                            f"Their balance would go below reserve: {remainder} mnoise missing.")
         with self.db_lock:
             if from_us:
                 assert self.can_send_ctx_updates(), f"cannot update channel. {self.get_state()!r} {self.peer_state!r}"

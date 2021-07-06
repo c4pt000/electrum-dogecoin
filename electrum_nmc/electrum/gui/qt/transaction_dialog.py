@@ -737,7 +737,7 @@ class PreviewTxDialog(BaseTxDialog, TxEditor):
         def feerounding_onclick():
             text = (self.feerounding_text + '\n\n' +
                     _('To somewhat protect your privacy, Electrum-NMC tries to create change with similar precision to other outputs.') + ' ' +
-                    _('At most 100 swartz might be lost due to this rounding.') + ' ' +
+                    _('At most 100 noise might be lost due to this rounding.') + ' ' +
                     _("You can disable this setting in '{}'.").format(_('Preferences')) + '\n' +
                     _('Also, dust is not kept as change, but added to the fee.')  + '\n' +
                     _('Also, when batching RBF transactions, BIP 125 imposes a lower bound on the fee.'))
@@ -796,7 +796,7 @@ class PreviewTxDialog(BaseTxDialog, TxEditor):
                and (self.feerate_e.text() or self.feerate_e.hasFocus())
 
     def set_feerounding_text(self, num_satoshis_added):
-        self.feerounding_text = (_('Additional {} swartz are going to be added.')
+        self.feerounding_text = (_('Additional {} noise are going to be added.')
                                  .format(num_satoshis_added))
 
     def get_fee_estimator(self):
