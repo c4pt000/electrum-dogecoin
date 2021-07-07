@@ -21,9 +21,9 @@ class OverlayLabel(QtWidgets.QLabel):
     QLabel, QLabel link {
         color: rgb(0, 0, 0);
         background-color: rgb(248, 240, 200);
-        border: 1px solid;
+        border: 5px solid;
         border-color: rgb(255, 114, 47);
-        padding: 2px;
+        padding: 20px;
     }
     '''
     def __init__(self, text, parent):
@@ -61,7 +61,7 @@ class Console(QtWidgets.QPlainTextEdit):
         self.updateNamespace({'run':self.run_script})
         self.set_json(False)
 
-        warning_text = "<h1>{}</h1><br>{}<br><br>{}".format(
+        warning_text = "<h1>{}</h1><h2>{}</h2><h2>{}</h2>".format(
             _("Warning!"),
             _("Do not paste code here that you don't understand. Executing the wrong code could lead "
               "to your coins being irreversibly lost."),

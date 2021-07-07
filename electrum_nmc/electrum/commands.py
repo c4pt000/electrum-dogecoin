@@ -552,7 +552,7 @@ class Commands:
     @command('')
     async def dumpprivkeys(self):
         """Deprecated."""
-        return "This command is deprecated. Use a pipe instead: 'electrum-nmc listaddresses | electrum-nmc getprivatekeys - '"
+        return "This command is deprecated. Use a pipe instead: 'electrum-radc listaddresses | electrum-radc getprivatekeys - '"
 
     @command('')
     async def validateaddress(self, address):
@@ -1750,8 +1750,8 @@ param_descriptions = {
     'pubkey': 'Public key',
     'message': 'Clear text message. Use quotes if it contains spaces.',
     'encrypted': 'Encrypted message',
-    'amount': 'Amount to be sent (in NMC). Type \'!\' to send the maximum available.',
-    'requested_amount': 'Requested amount (in NMC).',
+    'amount': 'Amount to be sent (in RADC). Type \'!\' to send the maximum available.',
+    'requested_amount': 'Requested amount (in RADC).',
     'outputs': 'list of ["address", amount]',
     'redeem_script': 'redeem script (hexadecimal)',
     'lightning_amount': "Amount sent or received in a submarine swap. Set it to 'dryrun' to receive a value",
@@ -1771,7 +1771,7 @@ command_options = {
     'labels':      ("-l", "Show the labels of listed addresses"),
     'nocheck':     (None, "Do not verify aliases"),
     'imax':        (None, "Maximum number of inputs"),
-    'fee':         ("-f", "Transaction fee (absolute, in NMC)"),
+    'fee':         ("-f", "Transaction fee (absolute, in RADC)"),
     'feerate':     (None, "Transaction fee rate (in noise/byte)"),
     'from_addr':   ("-F", "Source address (must be a wallet address; use sweep to spend from non-wallet address)."),
     'from_coins':  (None, "Source coins (must be in wallet; use sweep to spend from non-wallet address)."),
@@ -1791,7 +1791,7 @@ command_options = {
     'timeout':     (None, "Timeout in seconds"),
     'force':       (None, "Create new address beyond gap limit, if no more addresses are available."),
     'pending':     (None, "Show only pending requests."),
-    'push_amount': (None, 'Push initial amount (in NMC)'),
+    'push_amount': (None, 'Push initial amount (in RADC)'),
     'expired':     (None, "Show only expired requests."),
     'paid':        (None, "Show only paid requests."),
     'show_addresses': (None, "Show input and output addresses"),
@@ -1805,7 +1805,7 @@ command_options = {
     'iknowwhatimdoing': (None, "Acknowledge that I understand the full implications of what I am about to do"),
     'gossip':      (None, "Apply command to gossip node instead of wallet"),
     'destination': (None, "Namecoin address, contact or alias"),
-    'amount':      (None, "Amount to be sent (in NMC). Type \'!\' to send the maximum available."),
+    'amount':      (None, "Amount to be sent (in RADC). Type \'!\' to send the maximum available."),
     'outputs':     (None, "Currency outputs to add to a transaction in addition to a name operation."),
     'allow_existing': (None, "Allow pre-registering a name that already is registered.  Your registration fee will be forfeited until you can register the name after it expires."),
     'allow_early': (None, "Allow submitting a name registration while its pre-registration is still pending.  This increases the risk of an attacker stealing your name registration."),
@@ -1923,8 +1923,8 @@ def add_global_options(parser):
     group = parser.add_argument_group('global options')
     group.add_argument("-v", dest="verbosity", help="Set verbosity (log levels)", default='')
     group.add_argument("-V", dest="verbosity_shortcuts", help="Set verbosity (shortcut-filter list)", default='')
-    group.add_argument("-D", "--dir", dest="electrum_path", help="electrum-nmc directory")
-    group.add_argument("-P", "--portable", action="store_true", dest="portable", default=False, help="Use local 'electrum-nmc_data' directory")
+    group.add_argument("-D", "--dir", dest="electrum_path", help="electrum-radc directory")
+    group.add_argument("-P", "--portable", action="store_true", dest="portable", default=False, help="Use local 'electrum-radc_data' directory")
     group.add_argument("--testnet", action="store_true", dest="testnet", default=False, help="Use Testnet")
     group.add_argument("--regtest", action="store_true", dest="regtest", default=False, help="Use Regtest")
     group.add_argument("--simnet", action="store_true", dest="simnet", default=False, help="Use Simnet")
@@ -1937,11 +1937,11 @@ def add_wallet_option(parser):
 def get_parser():
     # create main parser
     parser = argparse.ArgumentParser(
-        epilog="Run 'electrum-nmc help <command>' to see the help for a command")
+        epilog="Run 'electrum-radc help <command>' to see the help for a command")
     add_global_options(parser)
     subparsers = parser.add_subparsers(dest='cmd', metavar='<command>')
     # gui
-    parser_gui = subparsers.add_parser('gui', description="Run Electrum-NMC's Graphical User Interface.", help="Run GUI (default)")
+    parser_gui = subparsers.add_parser('gui', description="Run Electrum-RADC's Graphical User Interface.", help="Run GUI (default)")
     parser_gui.add_argument("url", nargs='?', default=None, help="namecoin URI (or bip70 file)")
     parser_gui.add_argument("-g", "--gui", dest="gui", help="select graphical user interface", choices=['qt', 'kivy', 'text', 'stdio'])
     parser_gui.add_argument("-m", action="store_true", dest="hide_gui", default=False, help="hide GUI on startup")

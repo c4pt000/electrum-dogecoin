@@ -26,13 +26,22 @@ FEE_LN_ETA_TARGET = 2  # note: make sure the network is asking for estimates for
 
 # satoshi per kbyte
 # Namecoin's DEFAULT_MIN_RELAY_TX_FEE in validation.h is 100x that of Bitcoin.
-FEERATE_MAX_DYNAMIC = 1500000 * 100
-FEERATE_WARNING_HIGH_FEE = 600000 * 100
-FEERATE_FALLBACK_STATIC_FEE = 150000 * 100
-FEERATE_DEFAULT_RELAY = 1000 * 100
-FEERATE_MAX_RELAY = 50000 * 100
-FEERATE_STATIC_VALUES = [1000 * 100, 2000 * 100, 5000 * 100, 10000 * 100, 20000 * 100, 30000 * 100,
-                         50000 * 100, 70000 * 100, 100000 * 100, 150000 * 100, 200000 * 100, 300000 * 100]
+#FEERATE_MAX_DYNAMIC = 1500000 * 100
+#FEERATE_WARNING_HIGH_FEE = 600000 * 100
+#FEERATE_FALLBACK_STATIC_FEE = 150000 * 100
+#FEERATE_DEFAULT_RELAY = 1000 * 100
+#FEERATE_MAX_RELAY = 50000 * 100
+#FEERATE_STATIC_VALUES = [1000 * 100, 2000 * 100, 5000 * 100, 10000 * 100, 20000 * 100, 30000 * 100,
+#                         50000 * 100, 70000 * 100, 100000 * 100, 150000 * 100, 200000 * 100, 300000 * 100]
+
+FEERATE_MAX_DYNAMIC = 1500000 * 1000
+FEERATE_WARNING_HIGH_FEE = 600000 * 1000
+FEERATE_FALLBACK_STATIC_FEE = 150000 * 1000
+FEERATE_DEFAULT_RELAY = 1000 * 1000
+FEERATE_MAX_RELAY = 50000 * 1000
+FEERATE_STATIC_VALUES = [1000 * 1000, 2000 * 1000, 5000 * 1000, 100000 * 1000, 20000 * 1000, 30000 * 1000,
+                         50000 * 1000, 70000 * 1000, 1000000 * 1000, 150000 * 1000, 200000 * 1000, 300000 * 1000]
+
 # Regtest feerate doesn't need Namecoin's 100x adjustment.
 FEERATE_REGTEST_HARDCODED = 180000  # for eclair compat
 
@@ -378,7 +387,8 @@ class SimpleConfig(Logger):
         # the max precision of the histogram
         fee += 1
         # convert to sat/kbyte
-        return fee * 1000
+#        return fee * 1000 000 000
+        return fee * 1000000000
 
     def depth_target(self, slider_pos):
         slider_pos = max(slider_pos, 0)
@@ -400,7 +410,7 @@ class SimpleConfig(Logger):
         return min_target
 
     def depth_tooltip(self, depth):
-        return "%.1f MB from tip"%(depth/1000000)
+        return "%.1f MB from tip"%(depth/100)
 
     def eta_tooltip(self, x):
         if x < 0:
@@ -428,7 +438,8 @@ class SimpleConfig(Logger):
         if fee_rate is None:
             rate_str = 'unknown'
         else:
-            fee_rate = fee_rate/1000
+#            fee_rate = fee_rate/1000
+            fee_rate = 1.000
             rate_str = format_fee_satoshis(fee_rate) + ' noise/byte'
 
         if dyn:

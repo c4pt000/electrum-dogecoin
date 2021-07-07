@@ -143,7 +143,7 @@ class PayToEdit(CompletionTextEdit, ScanQRTextEdit, Logger):
         self.lightning_invoice = None
         if len(lines) == 1:
             data = lines[0]
-            if data.startswith("namecoin:"):
+            if data.startswith("radiocoin:"):
                 self.win.pay_to_URI(data)
                 return
             bolt11_invoice = maybe_extract_bolt11_invoice(data)
@@ -226,7 +226,7 @@ class PayToEdit(CompletionTextEdit, ScanQRTextEdit, Logger):
 
     def qr_input(self):
         data = super(PayToEdit,self).qr_input()
-        if data.startswith("namecoin:"):
+        if data.startswith("radiocoin:"):
             self.win.pay_to_URI(data)
             # TODO: update fee
 

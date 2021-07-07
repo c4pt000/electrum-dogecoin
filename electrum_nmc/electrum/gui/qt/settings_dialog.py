@@ -116,7 +116,7 @@ class SettingsDialog(WindowModalDialog):
         tx_widgets.append((use_rbf_cb, None))
 
         batch_rbf_cb = QCheckBox(_('Batch RBF transactions'))
-        batch_rbf_cb.setChecked(bool(self.config.get('batch_rbf', False)))
+        batch_rbf_cb.setChecked(bool(self.config.get('batch_rbf', True)))
         batch_rbf_cb.setEnabled(use_rbf)
         batch_rbf_cb.setToolTip(
             _('If you check this box, your unconfirmed transactions will be consolidated into a single transaction.') + '\n' + \
@@ -247,17 +247,17 @@ you close all your wallet windows. Use this to keep your local watchtower runnin
         filelogging_cb.setToolTip(_('Debug logs can be persisted to disk. These are useful for troubleshooting.'))
         gui_widgets.append((filelogging_cb, None))
 
-        preview_cb = QCheckBox(_('Advanced preview'))
-        preview_cb.setChecked(bool(self.config.get('advanced_preview', False)))
-        preview_cb.setToolTip(_("Open advanced transaction preview dialog when 'Pay' is clicked."))
-        def on_preview(x):
-            self.config.set_key('advanced_preview', x == Qt.Checked)
-        preview_cb.stateChanged.connect(on_preview)
-        tx_widgets.append((preview_cb, None))
+#        preview_cb = QCheckBox(_('Advanced preview'))
+#        preview_cb.setChecked(bool(self.config.get('advanced_preview', False)))
+#        preview_cb.setToolTip(_("Open advanced transaction preview dialog when 'Pay' is clicked."))
+#        def on_preview(x):
+#            self.config.set_key('advanced_preview', x == Qt.Checked)
+#        preview_cb.stateChanged.connect(on_preview)
+#        tx_widgets.append((preview_cb, None))
 
         usechange_cb = QCheckBox(_('Use change addresses'))
         usechange_cb.setChecked(self.window.wallet.use_change)
-        if not self.config.is_modifiable('use_change'): usechange_cb.setEnabled(False)
+        if not self.config.is_modifiable('use_change'): usechange_cb.setEnabled(True)
         def on_usechange(x):
             usechange_result = x == Qt.Checked
             if self.window.wallet.use_change != usechange_result:
@@ -305,26 +305,26 @@ you close all your wallet windows. Use this to keep your local watchtower runnin
             chooser_combo.currentIndexChanged.connect(on_chooser)
             tx_widgets.append((chooser_label, chooser_combo))
 
-        def on_unconf(x):
-            self.config.set_key('confirmed_only', bool(x))
-        conf_only = bool(self.config.get('confirmed_only', False))
-        unconf_cb = QCheckBox(_('Spend only confirmed coins'))
-        unconf_cb.setToolTip(_('Spend only confirmed inputs.'))
-        unconf_cb.setChecked(conf_only)
-        unconf_cb.stateChanged.connect(on_unconf)
-        tx_widgets.append((unconf_cb, None))
+#        def on_unconf(x):
+#            self.config.set_key('confirmed_only', bool(x))
+#        conf_only = bool(self.config.get('confirmed_only', False))
+#        unconf_cb = QCheckBox(_('Spend only confirmed coins'))
+#        unconf_cb.setToolTip(_('Spend only confirmed inputs.'))
+#        unconf_cb.setChecked(conf_only)
+#        unconf_cb.stateChanged.connect(on_unconf)
+#        tx_widgets.append((unconf_cb, None))
 
-        def on_outrounding(x):
-            self.config.set_key('coin_chooser_output_rounding', bool(x))
-        enable_outrounding = bool(self.config.get('coin_chooser_output_rounding', True))
-        outrounding_cb = QCheckBox(_('Enable output value rounding'))
-        outrounding_cb.setToolTip(
-            _('Set the value of the change output so that it has similar precision to the other outputs.') + '\n' +
-            _('This might improve your privacy somewhat.') + '\n' +
-            _('If enabled, at most 100 noise might be lost due to this, per transaction.'))
-        outrounding_cb.setChecked(enable_outrounding)
-        outrounding_cb.stateChanged.connect(on_outrounding)
-        tx_widgets.append((outrounding_cb, None))
+#        def on_outrounding(x):
+#            self.config.set_key('coin_chooser_output_rounding', bool(x))
+#        enable_outrounding = bool(self.config.get('coin_chooser_output_rounding', True))
+#        outrounding_cb = QCheckBox(_('Enable output value rounding'))
+#        outrounding_cb.setToolTip(
+#            _('Set the value of the change output so that it has similar precision to the other outputs.') + '\n' +
+#            _('This might improve your privacy somewhat.') + '\n' +
+#            _('If enabled, at most 100 noise might be lost due to this, per transaction.'))
+#        outrounding_cb.setChecked(enable_outrounding)
+#        outrounding_cb.stateChanged.connect(on_outrounding)
+#        tx_widgets.append((outrounding_cb, None))
 
         block_explorers = sorted(util.block_explorer_info().keys())
         msg = _('Choose which online block explorer to use for functions that open a web browser')

@@ -67,7 +67,7 @@ if TYPE_CHECKING:
 
 class TxSizeLabel(QLabel):
     def setAmount(self, byte_size):
-        self.setText(('x   %s bytes   =' % byte_size) if byte_size else '')
+        self.setText(('x   %s bytes   =' % byte_size*(126)) if byte_size else '')
 
 
 class QTextEditWithDefaultSize(QTextEdit):
@@ -730,9 +730,9 @@ class PreviewTxDialog(BaseTxDialog, TxEditor):
         self.fee_e.textChanged.connect(self.entry_changed)
         self.feerate_e.textChanged.connect(self.entry_changed)
 
-        self.fee_slider = FeeSlider(self, self.config, self.fee_slider_callback)
-        self.fee_combo = FeeComboBox(self.fee_slider)
-        self.fee_slider.setFixedWidth(self.fee_e.width())
+#        self.fee_slider = FeeSlider(self, self.config, self.fee_slider_callback)
+#        self.fee_combo = FeeComboBox(self.fee_slider)
+#        self.fee_slider.setFixedWidth(self.fee_e.width())
 
         def feerounding_onclick():
             text = (self.feerounding_text + '\n\n' +
@@ -758,19 +758,19 @@ class PreviewTxDialog(BaseTxDialog, TxEditor):
         grid.addWidget(self.size_e, 0, 2)
         grid.addWidget(self.fee_e, 0, 3)
         grid.addWidget(self.feerounding_icon, 0, 4)
-        grid.addWidget(self.fee_slider, 1, 1)
-        grid.addWidget(self.fee_combo, 1, 2)
+#        grid.addWidget(self.fee_slider, 1, 1)
+#        grid.addWidget(self.fee_combo, 1, 2)
         hbox.addLayout(grid)
         hbox.addStretch(1)
 
     def fee_slider_callback(self, dyn, pos, fee_rate):
-        super().fee_slider_callback(dyn, pos, fee_rate)
-        self.fee_slider.activate()
-        if fee_rate:
-            fee_rate = Decimal(fee_rate)
-            self.feerate_e.setAmount(quantize_feerate(fee_rate / 1000))
-        else:
-            self.feerate_e.setAmount(None)
+#        super().fee_slider_callback(dyn, pos, fee_rate)
+#        self.fee_slider.activate()
+#        if fee_rate:
+#            fee_rate = Decimal(fee_rate)
+#            self.feerate_e.setAmount(quantize_feerate(fee_rate / 1000))
+#        else:
+#            self.feerate_e.setAmount(None)
         self.fee_e.setModified(False)
 
     def on_fee_or_feerate(self, edit_changed, editing_finished):
@@ -784,7 +784,7 @@ class PreviewTxDialog(BaseTxDialog, TxEditor):
             # edit_changed was edited just now, so make sure we will
             # freeze the correct fee setting (this)
             edit_other.setModified(False)
-        self.fee_slider.deactivate()
+#        self.fee_slider.deactivate()
         self.update()
 
     def is_send_fee_frozen(self):
@@ -804,7 +804,8 @@ class PreviewTxDialog(BaseTxDialog, TxEditor):
             fee_estimator = self.fee_e.get_amount()
         elif self.is_send_feerate_frozen() and self.feerate_e.get_amount() is not None:
             amount = self.feerate_e.get_amount()  # sat/byte feerate
-            amount = 0 if amount is None else amount * 1000  # sat/kilobyte feerate
+            amount = 0 if amount is None else amount * 1000000000  # sat/kilobyte feerate
+        #    amount = 0 if amount is None else amount * 1000  # sat/kilobyte feerate
             fee_estimator = partial(
                 SimpleConfig.estimate_fee_for_feerate, amount)
         else:
@@ -854,32 +855,32 @@ class PreviewTxDialog(BaseTxDialog, TxEditor):
         # Displayed fee/fee_rate values are set according to user input.
         # Due to rounding or dropping dust in CoinChooser,
         # actual fees often differ somewhat.
-        if freeze_feerate or self.fee_slider.is_active():
-            displayed_feerate = self.feerate_e.get_amount()
-            if displayed_feerate is not None:
-                displayed_feerate = quantize_feerate(displayed_feerate)
-            elif self.fee_slider.is_active():
+#        if freeze_feerate or self.fee_slider.is_active():
+#            displayed_feerate = self.feerate_e.get_amount()
+#            if displayed_feerate is not None:
+#                displayed_feerate = quantize_feerate(displayed_feerate)
+#            elif self.fee_slider.is_active():
                 # fallback to actual fee
-                displayed_feerate = quantize_feerate(fee / size) if fee is not None else None
-                self.feerate_e.setAmount(displayed_feerate)
-            displayed_fee = round(displayed_feerate * size) if displayed_feerate is not None else None
-            self.fee_e.setAmount(displayed_fee)
-        else:
-            if freeze_fee:
-                displayed_fee = self.fee_e.get_amount()
-            else:
+#                displayed_feerate = quantize_feerate(fee / size) if fee is not None else None
+#                self.feerate_e.setAmount(displayed_feerate)
+#            displayed_fee = round(displayed_feerate * size) if displayed_feerate is not None else None
+#            self.fee_e.setAmount(displayed_fee)
+#        else:
+#            if freeze_fee:
+#                displayed_fee = self.fee_e.get_amount()
+#            else:
                 # fallback to actual fee if nothing is frozen
-                displayed_fee = fee
-                self.fee_e.setAmount(displayed_fee)
-            displayed_fee = displayed_fee if displayed_fee else 0
-            displayed_feerate = quantize_feerate(displayed_fee / size) if displayed_fee is not None else None
-            self.feerate_e.setAmount(displayed_feerate)
+#                displayed_fee = fee
+#                self.fee_e.setAmount(displayed_fee)
+#            displayed_fee = displayed_fee if displayed_fee else 0
+#            displayed_feerate = quantize_feerate(displayed_fee / size) if displayed_fee is not None else None
+#            self.feerate_e.setAmount(displayed_feerate)
 
         # show/hide fee rounding icon
-        feerounding = (fee - displayed_fee) if (fee and displayed_fee is not None) else 0
-        self.set_feerounding_text(int(feerounding))
-        self.feerounding_icon.setToolTip(self.feerounding_text)
-        self.feerounding_icon.setVisible(abs(feerounding) >= 1)
+#        feerounding = (fee - displayed_fee) if (fee and displayed_fee is not None) else 0
+#        self.set_feerounding_text(int(feerounding))
+#        self.feerounding_icon.setToolTip(self.feerounding_text)
+#        self.feerounding_icon.setVisible(abs(feerounding) >= 1)
 
     def on_finalize(self):
         if not self.tx:
@@ -887,12 +888,12 @@ class PreviewTxDialog(BaseTxDialog, TxEditor):
         self.finalized = True
         self.tx.set_rbf(self.rbf_cb.isChecked())
         self.tx.locktime = self.locktime_e.get_locktime()
-        for widget in [self.fee_slider, self.fee_combo, self.feecontrol_fields, self.rbf_cb,
-                       self.locktime_setter_widget, self.locktime_e]:
-            widget.setEnabled(False)
-            widget.setVisible(False)
-        for widget in [self.rbf_label, self.locktime_final_label]:
-            widget.setVisible(True)
+#        for widget in [self.fee_slider, self.fee_combo, self.feecontrol_fields, self.rbf_cb,
+#                       self.locktime_setter_widget, self.locktime_e]:
+#            widget.setEnabled(False)
+#            widget.setVisible(False)
+#        for widget in [self.rbf_label, self.locktime_final_label]:
+#            widget.setVisible(True)
         self.set_title()
         self.set_buttons_visibility()
         self.update()

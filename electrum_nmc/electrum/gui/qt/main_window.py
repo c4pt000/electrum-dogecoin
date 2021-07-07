@@ -218,7 +218,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
             tab.tab_description = description
             tab.tab_pos = len(tabs)
             tab.tab_name = name
-            if self.config.get('show_{}_tab'.format(name), False):
+            if self.config.get('show_{}_tab'.format(name), True):
                 tabs.addTab(tab, icon, description.replace("&", ""))
 
         add_optional_tab(tabs, self.addresses_tab, read_QIcon("tab_addresses.png"), _("&Addresses"), "addresses")
@@ -240,7 +240,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         if self.config.get("is_maximized"):
             self.showMaximized()
 
-        self.setWindowIcon(read_QIcon("electrum_nmc.png"))
+        self.setWindowIcon(read_QIcon("electrum_radc.png"))
         self.init_menubar()
 
         wrtabs = weakref.proxy(tabs)
@@ -284,23 +284,23 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         self.fetch_alias()
 
         # If the option hasn't been set yet
-        if config.get('check_updates') is None:
-            choice = self.question(title="Electrum-RADC - " + _("Enable update check"),
-                                   msg=_("For security reasons we advise that you always use the latest version of Electrum-RADC.") + " " +
-                                       _("Would you like to be notified when there is a newer version of Electrum-RADC available?"))
-            config.set_key('check_updates', bool(choice), save=True)
+#        if config.get('check_updates') is None:
+#            choice = self.question(title="Electrum-RADC - " + _("Enable update check"),
+#                                   msg=_("For security reasons we advise that you always use the latest version of Electrum-RADC.") + " " +
+#                                       _("Would you like to be notified when there is a newer version of Electrum-RADC available?"))
+#            config.set_key('check_updates', bool(choice), save=True)
 
-        if config.get('check_updates', False):
+#        if config.get('check_updates', False):
             # The references to both the thread and the window need to be stored somewhere
             # to prevent GC from getting in our way.
-            def on_version_received(v):
-                if UpdateCheck.is_newer(v):
-                    self.update_check_button.setText(_("Update to Electrum-RADC {} is available").format(v))
-                    self.update_check_button.clicked.connect(lambda: self.show_update_check(v))
-                    self.update_check_button.show()
-            self._update_check_thread = UpdateCheckThread()
-            self._update_check_thread.checked.connect(on_version_received)
-            self._update_check_thread.start()
+#            def on_version_received(v):
+#                if UpdateCheck.is_newer(v):
+#                    self.update_check_button.setText(_("Update to Electrum-RADC {} is available").format(v))
+#                    self.update_check_button.clicked.connect(lambda: self.show_update_check(v))
+#                    self.update_check_button.show()
+#            self._update_check_thread = UpdateCheckThread()
+#            self._update_check_thread.checked.connect(on_version_received)
+#            self._update_check_thread.start()
 
     def setup_exception_hook(self):
         Exception_Hook.maybe_setup(config=self.config,
@@ -756,7 +756,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         help_menu = menubar.addMenu(_("&Help"))
         help_menu.addAction(_("&About"), self.show_about)
         help_menu.addAction(_("&Check for updates"), self.show_update_check)
-        help_menu.addAction(_("&Official website"), lambda: webopen("https://github.com/c4pt000/electrum-wallet-radc"))
+        help_menu.addAction(_("&Official website"), lambda: webopen("https://github.com/c4pt000/electrum-radiocoin-4.0.0b-current"))
         help_menu.addSeparator()
         help_menu.addAction(_("&Documentation"), lambda: webopen("http://docs.electrum.org/")).setShortcut(QKeySequence.HelpContents)
         help_menu.addAction(_("&Report Bug"), self.show_report_bug)
@@ -3113,7 +3113,8 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
             combined_feerate.setText(comb_feerate_str)
         fee_e.textChanged.connect(on_fee_edit)
         def get_child_fee_from_total_feerate(fee_per_kb):
-            fee = fee_per_kb * total_size / 1000 - parent_fee
+            fee = fee_per_kb * total_size / 1000000000 - parent_fee
+#            fee = fee_per_kb * total_size / 1000 000 000 - parent_fee
             fee = min(max_fee, fee)
             fee = max(total_size, fee)  # pay at least 1 sat/byte for combined size
             return fee

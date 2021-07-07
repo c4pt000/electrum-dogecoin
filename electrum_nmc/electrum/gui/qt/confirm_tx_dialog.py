@@ -68,13 +68,13 @@ class TxEditor:
             self.needs_update = False
 
     def fee_slider_callback(self, dyn, pos, fee_rate):
-        if dyn:
-            if self.config.use_mempool_fees():
-                self.config.set_key('depth_level', pos, False)
-            else:
-                self.config.set_key('fee_level', pos, False)
-        else:
-            self.config.set_key('fee_per_kb', fee_rate, False)
+#        if dyn:
+#            if self.config.use_mempool_fees():
+#                self.config.set_key('depth_level', pos, False)
+#            else:
+#                self.config.set_key('fee_level', pos, False)
+#        else:
+#            self.config.set_key('fee_per_kb', fee_rate, False)
         self.needs_update = True
 
     def get_fee_estimator(self):
@@ -131,14 +131,14 @@ class ConfirmTxDialog(TxEditor, WindowModalDialog):
         grid.addWidget(QLabel(_("Amount to be sent") + ": "), 0, 0)
         grid.addWidget(self.amount_label, 0, 1)
 
-        msg = _('Namecoin transactions are in general not free. A transaction fee is paid by the sender of the funds.') + '\n\n'\
+        msg = _('Radiocoin transactions are in general not free. A transaction fee is paid by the sender of the funds.') + '\n\n'\
               + _('The amount of fee can be decided freely by the sender. However, transactions with low fees take more time to be processed.') + '\n\n'\
               + _('A suggested fee is automatically added to this field. You may override it. The suggested fee increases with the size of the transaction.')
         self.fee_label = QLabel('')
-        grid.addWidget(HelpLabel(_("Mining fee") + ": ", msg), 1, 0)
+        grid.addWidget(HelpLabel(_("Radiocoin network fee to send") + ": ", msg), 1, 0)
         grid.addWidget(self.fee_label, 1, 1)
 
-        self.name_fee_label = QLabel(_("Name registration fee") + ": ")
+        self.name_fee_label = QLabel(_("Radiocoin fee") + ": ")
         self.name_fee_label.setVisible(False)
         self.name_fee_value = QLabel('')
         self.name_fee_value.setVisible(False)
@@ -152,11 +152,11 @@ class ConfirmTxDialog(TxEditor, WindowModalDialog):
         grid.addWidget(self.extra_fee_label, 2+1, 0)
         grid.addWidget(self.extra_fee_value, 2+1, 1)
 
-        self.fee_slider = FeeSlider(self, self.config, self.fee_slider_callback)
-        self.fee_combo = FeeComboBox(self.fee_slider)
-        grid.addWidget(HelpLabel(_("Fee rate") + ": ", self.fee_combo.help_msg), 5+1, 0)
-        grid.addWidget(self.fee_slider, 5+1, 1)
-        grid.addWidget(self.fee_combo, 5+1, 2)
+#        self.fee_slider = FeeSlider(self, self.config, self.fee_slider_callback)
+#        self.fee_combo = FeeComboBox(self.fee_slider)
+#        grid.addWidget(HelpLabel(_("Fee rate") + ": ", self.fee_combo.help_msg), 5+1, 0)
+#        grid.addWidget(self.fee_slider, 5+1, 1)
+#        grid.addWidget(self.fee_combo, 5+1, 2)
 
         self.message_label = QLabel(self.default_message())
         grid.addWidget(self.message_label, 6+1, 0, 1, -1)
@@ -263,19 +263,23 @@ class ConfirmTxDialog(TxEditor, WindowModalDialog):
         amount = tx.output_value() if self.output_value == '!' else self.output_value
         feerate = Decimal(fee) / tx.estimated_size()  # sat/byte
         fee_ratio = Decimal(fee) / amount if amount else 1
-        if feerate < self.wallet.relayfee() / 1000:
-            msg = '\n'.join([
-                _("This transaction requires a higher fee, or it will not be propagated by your current server"),
-                _("Try to raise your transaction fee, or use a server with a lower relay fee.")
-            ])
-            self.toggle_send_button(False, message=msg)
-        elif fee_ratio >= FEE_RATIO_HIGH_WARNING:
-            self.toggle_send_button(True,
-                                    message=_('Warning') + ': ' + _("The fee for this transaction seems unusually high.")
-                                            + f'\n({fee_ratio*100:.2f}% of amount)')
-        elif feerate > FEERATE_WARNING_HIGH_FEE / 1000:
-            self.toggle_send_button(True,
-                                    message=_('Warning') + ': ' + _("The fee for this transaction seems unusually high.")
-                                            + f'\n(feerate: {feerate:.2f} noise/byte)')
-        else:
-            self.toggle_send_button(True)
+#        feerate = (fee) / tx.estimated_size()  # sat/byte
+#        fee_ratio = (fee) / amount if amount else 1
+
+
+#        if feerate < self.wallet.relayfee() / 1000:
+#            msg = '\n'.join([
+#                _("This transaction requires a higher fee, or it will not be propagated by your current server"),
+#                _("Try to raise your transaction fee, or use a server with a lower relay fee.")
+#            ])
+#            self.toggle_send_button(False, message=msg)
+#        elif fee_ratio >= FEE_RATIO_HIGH_WARNING:
+#            self.toggle_send_button(True,
+#                                    message=_('Warning') + ': ' + _("The fee for this transaction seems unusually high.")
+#                                            + f'\n({fee_ratio*100:.2f}% of amount)')
+#        elif feerate > FEERATE_WARNING_HIGH_FEE / 1000:
+#            self.toggle_send_button(True,
+#                                    message=_('Warning') + ': ' + _("The fee for this transaction seems unusually high.")
+#                                            + f'\n(feerate: {feerate:.2f} noise/byte)')
+#        else:
+        self.toggle_send_button(True)
