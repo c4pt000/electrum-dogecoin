@@ -1,6 +1,18 @@
 # electrum-radiocoin-4.1.4-current
 
 
+will not send a TX while running from docker use the installer natively instead 
+docker run -it --net host -d -e "DISPLAY=${DISPLAY:-:0.0}" -v /tmp/.X11-unix:/tmp/.X11-unix fedora:34
+
+(fedora 34)
+```
+ cd /opt
+ yum install git nano wget -y
+ git clone https://github.com/c4pt000/electrum-radiocoin-4.0.0b-current
+ cd electrum-radiocoin-4.0.0b-current/
+ sh install-radiocoin-electrum.sh 
+```
+
  * has to be a minimum of 1.00 RADC fee to send (with electrum)
 
 # dont use with docker
