@@ -14,7 +14,7 @@ cd /opt
  sh install-radiocoin-electrum.sh 
 ```
 
- * has to be a minimum of 1.00 RADC fee to send (with electrum)
+ * todo hardcode  a minimum of 1.00 RADC fee to send (with electrum)
 
 # dont use with docker
 * wont send a transaction while running from the docker guest (even with --net host)
