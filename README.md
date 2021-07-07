@@ -3,8 +3,8 @@
 
  * has to be a minimum of 1.00 RADC fee to send (with electrum)
 
-
-
+# dont use with docker
+* wont send a transaction while running from the docker guest (even with --net host)
 
 * 07-06-2021
 # PAPER wallet import works with radiocoin-electrum-4.1.4
@@ -33,5 +33,4 @@ xhost
 echo "xhost SI:localuser:root" >> /root/.bashrc
 source /root/.bashrc
 
-docker run -it -d --net host -e "DISPLAY=${DISPLAY:-:0.0}" -v /tmp/.X11-unix:/tmp/.X11-unix c4pt/radiocoin-4.1.4-electrum bash
 ```
