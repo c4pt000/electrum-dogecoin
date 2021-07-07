@@ -135,10 +135,10 @@ class ConfirmTxDialog(TxEditor, WindowModalDialog):
               + _('The amount of fee can be decided freely by the sender. However, transactions with low fees take more time to be processed.') + '\n\n'\
               + _('A suggested fee is automatically added to this field. You may override it. The suggested fee increases with the size of the transaction.')
         self.fee_label = QLabel('')
-        grid.addWidget(HelpLabel(_("Radiocoin network fee to send") + ": ", msg), 1, 0)
+        grid.addWidget(HelpLabel(_("Radiocoin network fee") + ": ", msg), 1, 0)
         grid.addWidget(self.fee_label, 1, 1)
 
-        self.name_fee_label = QLabel(_("Radiocoin fee") + ": ")
+        self.name_fee_label = QLabel(_("Radiocoin network fee") + ": ")
         self.name_fee_label.setVisible(False)
         self.name_fee_value = QLabel('')
         self.name_fee_value.setVisible(False)

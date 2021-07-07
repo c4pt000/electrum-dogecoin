@@ -67,7 +67,9 @@ if TYPE_CHECKING:
 
 class TxSizeLabel(QLabel):
     def setAmount(self, byte_size):
-        self.setText(('x   %s bytes   =' % byte_size*(126)) if byte_size else '')
+#        self.setText(('x   %s bytes   =' % byte_size) if byte_size else '')
+        self.setText(('%s     =' % 'fee amount'))
+# if byte_size else '')
 
 
 class QTextEditWithDefaultSize(QTextEdit):

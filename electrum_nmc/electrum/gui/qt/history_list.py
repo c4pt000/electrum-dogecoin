@@ -122,7 +122,7 @@ class HistoryNode(CustomNode):
         if is_lightning:
             status = 0
             if timestamp is None:
-                status_str = 'unconfirmed'
+                status_str = 'confirmed'
             else:
                 status_str = format_time(int(timestamp))
         else:
@@ -672,7 +672,7 @@ class HistoryList(MyTreeView, AcceptFileDragDrop):
             return
         tx_URL = block_explorer_URL(self.config, 'tx', tx_hash)
         tx_details = self.wallet.get_tx_info(tx)
-        is_unconfirmed = tx_details.tx_mined_status.height <= 0
+        is_unconfirmed = tx_details.tx_mined_status.height <= -1
         invoice_keys = self.wallet._get_relevant_invoice_keys_for_tx(tx)
         menu = QMenu()
         if tx_details.can_remove:

@@ -967,15 +967,19 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
                 text = _("Server is lagging ({} blocks)").format(server_lag)
                 icon = read_QIcon("status_lagging%s.png"%fork_str)
             else:
-                c, u, x = self.wallet.get_balance(hide_expired=True)
-                text =  _("Balance" ) + ": %s "%(self.format_amount_and_units(c))
-                if u:
-                    text +=  " [%s unconfirmed]"%(self.format_amount(u, is_diff=True).strip())
-                if x:
-                    text +=  " [%s unmatured]"%(self.format_amount(x, is_diff=True).strip())
-                if self.wallet.has_lightning():
-                    l = self.wallet.lnworker.get_balance()
-                    text += u'    \U0001f5f2 %s'%(self.format_amount_and_units(l).strip())
+                c, u, x = self.wallet.get_balance(hide_expired=False)
+                text = _("Radiocoin electrum-4.0.0b-current" )
+#                text =  (self.format_amount_and_units(c))
+#                text =  _("Balance" ) + ": %s  "%(self.format_units(c))
+#                text =  _("Balance" ) + ":  "%(self.format_amount_and_units(c))
+#                if u:
+#                    text +=  " [confirmed]"
+#                    text +=  " [%s confirmed]"%(self.format_amount(u, is_diff=True).strip())
+#                if x:
+#                    text +=  " [%s unmatured]"%(self.format_amount(x, is_diff=True).strip())
+#                if self.wallet.has_lightning():
+#                    l = self.wallet.lnworker.get_balance()
+#                    text += u'    \U0001f5f2 %s'%(self.format_amount_and_units(l).strip())
                 # append fiat balance and price
                 if self.fx.is_enabled():
                     text += self.fx.get_fiat_status_text(c + u + x,
@@ -986,8 +990,8 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
                     icon = read_QIcon("status_connected_proxy%s.png"%fork_str)
 
                 # append name count
-                name_confirmed_count, name_pending_count = get_wallet_name_count(self.wallet, self.network)
-                text += ", {} {}, {} {}".format(name_confirmed_count, _("names"), name_pending_count, _("pending registration"))
+#                name_confirmed_count, name_pending_count = get_wallet_name_count(self.wallet, self.network)
+#                text += ", {} {}, {} {}".format(name_confirmed_count, _("names"), name_pending_count, _("pending registration"))
         else:
             if self.network.proxy:
                 text = "{} ({})".format(_("Not connected"), _("proxy enabled"))
@@ -3435,7 +3439,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
     def create_names_tab(self):
         self.names_vbox = vbox = QVBoxLayout()
 
-        self.names_your_names_label = QLabel(_('Your registered names (pending and unconfirmed names have blank expiration):'))
+        self.names_your_names_label = QLabel(_('(pending and unconfirmed coins have blank expiration):'))
         vbox.addWidget(self.names_your_names_label)
 
         # List of names

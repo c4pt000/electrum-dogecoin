@@ -90,9 +90,9 @@ from .names import (get_default_name_tx_label, OP_NAME_NEW, OP_NAME_FIRSTUPDATE,
 _logger = get_logger(__name__)
 
 TX_STATUS = [
-    _('Unconfirmed'),
-    _('Unconfirmed parent'),
-    _('Not Verified'),
+    _('paid'),
+    _('paid'),
+    _('paid'),
     _('Local'),
 ]
 
@@ -576,9 +576,9 @@ class Abstract_Wallet(AddressSynchronizer, ABC):
                     if tx_mined_status.conf:
                         status = _("{} confirmations").format(tx_mined_status.conf)
                     else:
-                        status = _('Not verified')
+                        status = _('paid')
                 elif tx_mined_status.height in (TX_HEIGHT_UNCONF_PARENT, TX_HEIGHT_UNCONFIRMED):
-                    status = _('Unconfirmed')
+                    status = _('paid')
                     if fee is None:
                         fee = self.get_tx_fee(tx_hash)
                     if fee and self.network and self.config.has_fee_mempool():
