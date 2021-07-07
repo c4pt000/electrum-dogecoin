@@ -271,8 +271,7 @@ class Wallet_2fa(Multisig_Wallet):
 
     def _load_billing_addresses(self):
         billing_addresses = {
-            'legacy': self.db.get('trustedcoin_billing_addresses', {}),
-            'segwit': self.db.get('trustedcoin_billing_addresses_segwit', {})
+            'standard': self.db.get('trustedcoin_billing_addresses', {}),
         }
         self._billing_addresses = {}  # type: Dict[str, Dict[int, str]]  # addr_type -> index -> addr
         self._billing_addresses_set = set()  # set of addrs
@@ -322,8 +321,8 @@ class Wallet_2fa(Multisig_Wallet):
             self, coins=coins, outputs=o, fee=fee, change_addr=change_addr)
         extra_fee = self.extra_fee() if not is_sweep else 0
         if extra_fee:
-            address = self.billing_info['billing_address_segwit']
-            fee_output = PartialTxOutput.from_address_and_value(address, extra_fee)
+#            address = self.billing_info['billing_address_segwit']
+#            fee_output = PartialTxOutput.from_address_and_value(address, extra_fee)
             try:
                 tx = mk_tx(outputs + [fee_output])
             except NotEnoughFunds:
@@ -382,8 +381,7 @@ class Wallet_2fa(Multisig_Wallet):
         billing_addresses_of_this_type[billing_index] = address
         self._billing_addresses_set.add(address)
         self._billing_addresses[addr_type] = billing_addresses_of_this_type
-        self.db.put('trustedcoin_billing_addresses', self._billing_addresses['legacy'])
-        self.db.put('trustedcoin_billing_addresses_segwit', self._billing_addresses['segwit'])
+        self.db.put('trustedcoin_billing_addresses', self._billing_addresses['standard'])
         # FIXME this often runs in a daemon thread, where storage.write will fail
         self.db.write(self.storage)
 
@@ -418,10 +416,8 @@ def make_billing_address(wallet, num, addr_type):
     usernode = BIP32Node.from_xkey(xpub)
     child_node = usernode.subkey_at_public_derivation([num])
     pubkey = child_node.eckey.get_public_key_bytes(compressed=True)
-    if addr_type == 'legacy':
+    if addr_type == 'standard':
         return bitcoin.public_key_to_p2pkh(pubkey)
-    elif addr_type == 'segwit':
-        return bitcoin.public_key_to_p2wpkh(pubkey)
     else:
         raise ValueError(f'unexpected billing type: {addr_type}')
 
@@ -498,14 +494,14 @@ class TrustedCoinPlugin(BasePlugin):
             raise
         billing_index = billing_info['billing_index']
         # add segwit billing address; this will be used for actual billing
-        billing_address = make_billing_address(wallet, billing_index, addr_type='segwit')
-        if billing_address != billing_info['billing_address_segwit']:
-            raise Exception(f'unexpected trustedcoin billing address: '
-                            f'calculated {billing_address}, received {billing_info["billing_address_segwit"]}')
-        wallet.add_new_billing_address(billing_index, billing_address, addr_type='segwit')
+#        billing_address = make_billing_address(wallet, billing_index, addr_type='segwit')
+ #       if billing_address != billing_info['billing_address_segwit']:
+  #          raise Exception(f'unexpected trustedcoin billing address: '
+   #                         f'calculated {billing_address}, received {billing_info["billing_address_segwit"]}')
+    #    wallet.add_new_billing_address(billing_index, billing_address, addr_type='segwit')
         # also add legacy billing address; only used for detecting past payments in GUI
-        billing_address = make_billing_address(wallet, billing_index, addr_type='legacy')
-        wallet.add_new_billing_address(billing_index, billing_address, addr_type='legacy')
+        billing_address = make_billing_address(wallet, billing_index, addr_type='standard')
+        wallet.add_new_billing_address(billing_index, billing_address, addr_type='standard')
 
         wallet.billing_info = billing_info
         wallet.price_per_tx = dict(billing_info['price_per_tx'])
@@ -546,13 +542,11 @@ class TrustedCoinPlugin(BasePlugin):
 
     def choose_seed_type(self, wizard):
         choices = [
-            ('create_2fa_segwit_seed', _('Segwit 2FA')),
-            ('create_2fa_seed', _('Legacy 2FA')),
+            ('create_2fa_seed', _('Standard 2FA')),
         ]
         wizard.choose_seed_type(choices=choices)
 
     def create_2fa_seed(self, wizard): self.create_seed(wizard, '2fa')
-    def create_2fa_segwit_seed(self, wizard): self.create_seed(wizard, '2fa_segwit')
 
     def create_seed(self, wizard, seed_type):
         seed = self.make_seed(seed_type)

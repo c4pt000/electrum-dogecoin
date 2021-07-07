@@ -145,9 +145,9 @@ class BaseWizard(Logger):
         ])
         wallet_kinds = [
             ('standard',  _("Standard wallet")),
-            ('2fa', _("Wallet with two-factor authentication")),
-            ('multisig',  _("Multi-signature wallet")),
-            ('imported',  _("Import Namecoin addresses or private keys")),
+#            ('2fa', _("Wallet with two-factor authentication")),
+            ('multisig',  _("Multi-signature wallet (untested)")),
+            ('imported',  _("Import Radiocoin addresses or private keys")),
         ]
         choices = [pair for pair in wallet_kinds if pair[0] in wallet_types]
         self.choice_dialog(title=title, message=message, choices=choices, run_next=self.on_wallet_type)
@@ -176,7 +176,7 @@ class BaseWizard(Logger):
 
     def load_2fa(self):
         self.data['wallet_type'] = '2fa'
-        self.data['use_trustedcoin'] = True
+        self.data['use_trustedcoin'] = False
         self.plugin = self.plugins.load_plugin('trustedcoin')
 
     def on_wallet_type(self, choice):
@@ -226,8 +226,8 @@ class BaseWizard(Logger):
 
     def import_addresses_or_keys(self):
         v = lambda x: keystore.is_address_list(x) or keystore.is_private_key_list(x, raise_on_error=True)
-        title = _("Import Namecoin Addresses")
-        message = _("Enter a list of Namecoin addresses (this will create a watching-only wallet), or a list of private keys.")
+        title = _("Import Radiocoin Addresses")
+        message = _("Enter a list of Radiocoin addresses (this will create a watching-only wallet), or a list of private keys.")
         self.add_xpub_dialog(title=title, message=message, run_next=self.on_import,
                              is_valid=v, allow_multi=True, show_wif_help=True)
 
@@ -417,15 +417,11 @@ class BaseWizard(Logger):
             default_choice_idx = 2
             choices = [
                 ('standard',   'legacy multisig (p2sh)',            normalize_bip32_derivation("m/45'/0")),
-                ('p2wsh-p2sh', 'p2sh-segwit multisig (p2wsh-p2sh)', purpose48_derivation(0, xtype='p2wsh-p2sh')),
-                ('p2wsh',      'native segwit multisig (p2wsh)',    purpose48_derivation(0, xtype='p2wsh')),
             ]
         else:
             default_choice_idx = 2
             choices = [
                 ('standard',    'legacy (p2pkh)',            bip44_derivation(0, bip43_purpose=44)),
-                ('p2wpkh-p2sh', 'p2sh-segwit (p2wpkh-p2sh)', bip44_derivation(0, bip43_purpose=49)),
-                ('p2wpkh',      'native segwit (p2wpkh)',    bip44_derivation(0, bip43_purpose=84)),
             ]
         while True:
             try:
@@ -485,7 +481,7 @@ class BaseWizard(Logger):
     def restore_from_seed(self):
         self.opt_bip39 = True
         self.opt_ext = True
-        is_cosigning_seed = lambda x: mnemonic.seed_type(x) in ['standard', 'segwit']
+        is_cosigning_seed = lambda x: mnemonic.seed_type(x) in ['standard']
         test = mnemonic.is_seed if self.wallet_type == 'standard' else is_cosigning_seed
         self.restore_seed_dialog(run_next=self.on_restore_seed, test=test)
 
@@ -494,7 +490,7 @@ class BaseWizard(Logger):
         if self.seed_type == 'bip39':
             f = lambda passphrase: self.on_restore_bip39(seed, passphrase)
             self.passphrase_dialog(run_next=f, is_restoring=True) if is_ext else f('')
-        elif self.seed_type in ['standard', 'segwit']:
+        elif self.seed_type in ['standard']:
             f = lambda passphrase: self.run('create_keystore', seed, passphrase)
             self.passphrase_dialog(run_next=f, is_restoring=True) if is_ext else f('')
         elif self.seed_type == 'old':
@@ -654,12 +650,10 @@ class BaseWizard(Logger):
             ])
         if choices is None:
             choices = [
-                ('create_segwit_seed', _('Segwit')),
-                ('create_standard_seed', _('Legacy')),
+                ('create_standard_seed', _('Standard')),
             ]
         self.choice_dialog(title=title, message=message, choices=choices, run_next=self.run)
 
-    def create_segwit_seed(self): self.create_seed('segwit')
     def create_standard_seed(self): self.create_seed('standard')
 
     def create_seed(self, seed_type):
