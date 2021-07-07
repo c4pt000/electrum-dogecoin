@@ -1,6 +1,7 @@
 # electrum-radiocoin-4.1.4-current
 
 
+* has to be a minimum of 1.00 RADC fee to send (with electrum)
 
 
 
