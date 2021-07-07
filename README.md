@@ -1,6 +1,7 @@
 # electrum-radiocoin-4.1.4-current
 
 fedora 34
+<br>
 will not send a TX while running from docker use the installer natively instead 
 ```
 docker run -it --net host -d -e "DISPLAY=${DISPLAY:-:0.0}" -v /tmp/.X11-unix:/tmp/.X11-unix fedora:34
