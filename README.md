@@ -1,5 +1,10 @@
 # electrum-radiocoin-4.1.4-current
 
+win10 release
+
+https://github.com/c4pt000/electrum-radiocoin/releases/tag/win10
+
+
 fedora 34
 <br>
 will not send a TX while running from docker use the installer natively instead 
