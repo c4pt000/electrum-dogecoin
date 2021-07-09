@@ -36,6 +36,8 @@ import base64
 from functools import partial
 import queue
 import asyncio
+
+
 from typing import Optional, TYPE_CHECKING, Sequence, List, Union
 
 from PyQt5.QtGui import QPixmap, QKeySequence, QIcon, QCursor, QFont
@@ -755,13 +757,13 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
 
         help_menu = menubar.addMenu(_("&Help"))
         help_menu.addAction(_("&About"), self.show_about)
-        help_menu.addAction(_("&Check for updates"), self.show_update_check)
-        help_menu.addAction(_("&Official website"), lambda: webopen("https://github.com/c4pt000/electrum-radiocoin-4.0.0b-current"))
+        help_menu.addAction(_("&Official website"), lambda: webopen("https://github.com/c4pt000/electrum-radiocoin"))
+        help_menu.addAction(_("&Official blockexplorer"), lambda: webopen("http://radioblockchain.info/"))
         help_menu.addSeparator()
         help_menu.addAction(_("&Documentation"), lambda: webopen("http://docs.electrum.org/")).setShortcut(QKeySequence.HelpContents)
-        help_menu.addAction(_("&Report Bug"), self.show_report_bug)
+#        help_menu.addAction(_("&Report Bug"), self.show_report_bug)
         help_menu.addSeparator()
-        help_menu.addAction(_("&Donate to server"), self.donate_to_server)
+#        help_menu.addAction(_("&Donate to server"), self.donate_to_server)
 
         self.setMenuBar(menubar)
 
@@ -782,8 +784,8 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
                            _("Startup times are instant because it operates in conjunction with high-performance "
                               "servers that handle the most complicated parts of the Radiocoin system.") + "\n\n" +
                            _("https://github.com/c4pt000/radioCOIN ") + "\n\n" +
-                           _("https://github.com/c4pt000/electrum-wallet-radc") + "\n\n" +
-                           _("Uses icons from the Icons8 icon pack (icons8.com).")))
+                           _("https://github.com/c4pt000/electrum-radiocoin") + "\n\n" +
+                           _("http://radioblockchain.info/ ")))
 
     def show_update_check(self, version=None):
         self.gui_object._update_check = UpdateCheck(latest_version=version)
@@ -968,7 +970,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
                 icon = read_QIcon("status_lagging%s.png"%fork_str)
             else:
                 c, u, x = self.wallet.get_balance(hide_expired=False)
-                text = _("Radiocoin electrum-4.0.0b-current" )
+                text = _("Radiocoin electrum-4.0.1-current" )
 #                text =  (self.format_amount_and_units(c))
 #                text =  _("Balance" ) + ": %s  "%(self.format_units(c))
 #                text =  _("Balance" ) + ":  "%(self.format_amount_and_units(c))
@@ -1103,13 +1105,13 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
             _('Expired requests have to be deleted manually from your list, in order to free the corresponding Radiocoin addresses.'),
             _('The Radiocoin address never expires and will always be part of this electrum-RADC wallet.'),
         ])
-        grid.addWidget(HelpLabel(_('Expires after'), msg), 2, 0)
-        grid.addWidget(self.expires_combo, 2, 1)
+#        grid.addWidget(HelpLabel(_('Expires after'), msg), 2, 0)
+#        grid.addWidget(self.expires_combo, 2, 1)
         self.expires_label = QLineEdit('')
         self.expires_label.setReadOnly(1)
         self.expires_label.setFocusPolicy(Qt.NoFocus)
         self.expires_label.hide()
-        grid.addWidget(self.expires_label, 2, 1)
+ #       grid.addWidget(self.expires_label, 2, 1)
 
         self.clear_invoice_button = QPushButton(_('Clear'))
         self.clear_invoice_button.clicked.connect(self.clear_receive_tab)

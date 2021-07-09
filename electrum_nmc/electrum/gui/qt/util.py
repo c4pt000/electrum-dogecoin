@@ -988,10 +988,10 @@ def webopen(url: str):
         # See #5425
         if os.fork() == 0:
             del os.environ['LD_LIBRARY_PATH']
-            webbrowser.open(url)
+            webbrowser.open(url, new=2)
             sys.exit(0)
     else:
-        webbrowser.open(url)
+        webbrowser.open(url, new=2)
 
 
 if __name__ == "__main__":
