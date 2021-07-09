@@ -716,12 +716,12 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
             item_name = (_("Hide") if is_shown else _("Show")) + " " + tab.tab_description
             tab.menu_action = view_menu.addAction(item_name, lambda: self.toggle_tab(tab))
 
-        view_menu = menubar.addMenu(_("&View"))
-        add_toggle_action(view_menu, self.addresses_tab)
-        add_toggle_action(view_menu, self.utxo_tab)
-        add_toggle_action(view_menu, self.channels_tab)
-        add_toggle_action(view_menu, self.contacts_tab)
-        add_toggle_action(view_menu, self.console_tab)
+        #view_menu = menubar.addMenu(_("&View"))
+        #add_toggle_action(view_menu, self.addresses_tab)
+        #add_toggle_action(view_menu, self.utxo_tab)
+        #add_toggle_action(view_menu, self.channels_tab)
+        #add_toggle_action(view_menu, self.contacts_tab)
+        #add_toggle_action(view_menu, self.console_tab)
 
         tools_menu = menubar.addMenu(_("&Tools"))  # type: QMenu
         preferences_action = tools_menu.addAction(_("Preferences"), self.settings_dialog)  # type: QAction
