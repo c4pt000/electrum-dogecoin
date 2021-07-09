@@ -1,5 +1,5 @@
 # electrum-radiocoin-4.1.4-current
-
+for server https://github.com/c4pt000/electrumx-dogecoin-server-radiocoin-4.1.4
 win10 release
 
 https://github.com/c4pt000/electrum-radiocoin/releases/tag/win10
