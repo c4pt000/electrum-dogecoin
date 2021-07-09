@@ -22,8 +22,8 @@ docker run -it --net host -d -e "DISPLAY=${DISPLAY:-:0.0}" -v /tmp/.X11-unix:/tm
 
 cd /opt
  yum install git nano wget -y
- git clone https://github.com/c4pt000/electrum-radiocoin-4.0.0b-current
- cd electrum-radiocoin-4.0.0b-current/
+ git clone https://github.com/c4pt000/electrum-radiocoin
+ cd electrum-radiocoin
  sh install-radiocoin-electrum.sh 
 ```
 
