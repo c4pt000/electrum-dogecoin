@@ -5,8 +5,8 @@ nano qrencode-devel qt5-qtbase-devel.x86_64 qt-devel qt4-devel wget -y
 
 	cd /opt/
 
-	git clone https://github.com/c4pt000/electrum-radiocoin-4.0.0b-current
-	cd electrum-radiocoin-4.0.0b-current/
+	git clone https://github.com/c4pt000/electrum-radiocoin
+	cd electrum-radiocoin
 
 	python3 -m pip install cryptography PyQt5
 	python3 -m pip install .
