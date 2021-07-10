@@ -17,7 +17,7 @@ Builder.load_string('''
 
 <SettingsDialog@Popup>
     id: settings
-    title: _('Electrum-NMC Settings')
+    title: _('Electrum-DOGE Settings')
     disable_password: False
     has_pin_code: False
     use_encryption: False

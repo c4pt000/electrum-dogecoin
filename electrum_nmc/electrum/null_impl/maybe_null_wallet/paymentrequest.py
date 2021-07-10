@@ -46,8 +46,8 @@ from .transaction import TxOutput
 from .network import Network
 
 
-REQUEST_HEADERS = {'Accept': 'application/namecoin-paymentrequest', 'User-Agent': 'Electrum-NMC'}
-ACK_HEADERS = {'Content-Type':'application/namecoin-payment','Accept':'application/namecoin-paymentack','User-Agent':'Electrum-NMC'}
+REQUEST_HEADERS = {'Accept': 'application/namecoin-paymentrequest', 'User-Agent': 'Electrum-DOGE'}
+ACK_HEADERS = {'Content-Type':'application/namecoin-payment','Accept':'application/namecoin-paymentack','User-Agent':'Electrum-DOGE'}
 
 ca_path = certifi.where()
 ca_list = None

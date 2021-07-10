@@ -1,4 +1,4 @@
-AppImage binary for Electrum-NMC
+AppImage binary for Electrum-DOGE
 ============================
 
 ✓ _This binary should be reproducible, meaning you should be able to generate

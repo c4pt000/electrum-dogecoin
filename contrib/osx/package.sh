@@ -17,7 +17,7 @@ export PATH=$PATH:~/bin
 . $(dirname "$0")/base.sh
 
 if [ -z "$1" ]; then
-    echo "Usage: $0 Electrum-NMC.app"
+    echo "Usage: $0 Electrum-DOGE.app"
     exit -127
 fi
 
@@ -73,16 +73,16 @@ ${genisoimage} \
     -D \
     -l \
     -probe \
-    -V "Electrum-NMC" \
+    -V "Electrum-DOGE" \
     -no-pad \
     -r \
     -dir-mode 0755 \
     -apple \
-    -o Electrum-NMC_uncompressed.dmg \
+    -o Electrum-DOGE_uncompressed.dmg \
     /tmp/electrum-nmc-macos/image || fail "Unable to create uncompressed dmg"
 
-dmg dmg Electrum-NMC_uncompressed.dmg electrum-nmc-$VERSION.dmg || fail "Unable to create compressed dmg"
-rm Electrum-NMC_uncompressed.dmg
+dmg dmg Electrum-DOGE_uncompressed.dmg electrum-nmc-$VERSION.dmg || fail "Unable to create compressed dmg"
+rm Electrum-DOGE_uncompressed.dmg
 
 echo "Done."
 sha256sum electrum-nmc-$VERSION.dmg

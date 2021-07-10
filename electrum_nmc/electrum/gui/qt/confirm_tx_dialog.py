@@ -131,14 +131,14 @@ class ConfirmTxDialog(TxEditor, WindowModalDialog):
         grid.addWidget(QLabel(_("Amount to be sent") + ": "), 0, 0)
         grid.addWidget(self.amount_label, 0, 1)
 
-        msg = _('Radiocoin transactions are in general not free. A transaction fee is paid by the sender of the funds.') + '\n\n'\
+        msg = _('Dogecoin transactions are in general not free. A transaction fee is paid by the sender of the funds.') + '\n\n'\
               + _('The amount of fee can be decided freely by the sender. However, transactions with low fees take more time to be processed.') + '\n\n'\
               + _('A suggested fee is automatically added to this field. You may override it. The suggested fee increases with the size of the transaction.')
         self.fee_label = QLabel('')
-        grid.addWidget(HelpLabel(_("Radiocoin network fee") + ": ", msg), 1, 0)
+        grid.addWidget(HelpLabel(_("Dogecoin network fee") + ": ", msg), 1, 0)
         grid.addWidget(self.fee_label, 1, 1)
 
-        self.name_fee_label = QLabel(_("Radiocoin network fee") + ": ")
+        self.name_fee_label = QLabel(_("Dogecoin network fee") + ": ")
         self.name_fee_label.setVisible(False)
         self.name_fee_value = QLabel('')
         self.name_fee_value.setVisible(False)

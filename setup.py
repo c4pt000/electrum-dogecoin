@@ -17,7 +17,7 @@ _min_python_version_tuple = tuple(map(int, (MIN_PYTHON_VERSION.split("."))))
 
 
 if sys.version_info[:3] < _min_python_version_tuple:
-    sys.exit("Error: Electrum-NMC requires Python version >= %s..." % MIN_PYTHON_VERSION)
+    sys.exit("Error: Electrum-DOGE requires Python version >= %s..." % MIN_PYTHON_VERSION)
 
 with open('contrib/requirements/requirements.txt') as f:
     requirements = f.read().splitlines()
@@ -46,7 +46,7 @@ if platform.system() in ['Linux', 'FreeBSD', 'DragonFly']:
         else:
             usr_share = os.path.expanduser('~/.local/share')
     data_files += [
-        (os.path.join(usr_share, 'applications/'), ['electrum-nmc.desktop']),
+        (os.path.join(usr_share, 'applications/'), ['electrum-doge.desktop']),
         (os.path.join(usr_share, icons_dirname), ['electrum_nmc/electrum/gui/icons/electrum_nmc.png']),
     ]
 
@@ -65,7 +65,7 @@ extras_require['fast'] = extras_require['crypto']
 
 
 setup(
-    name="Electrum-NMC",
+    name="Electrum-DOGE",
     version=version.ELECTRUM_VERSION,
     python_requires='>={}'.format(MIN_PYTHON_VERSION),
     install_requires=requirements,

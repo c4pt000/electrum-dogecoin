@@ -93,7 +93,7 @@ SIGHASH_ALL = 1
 
 class TxOutput:
     scriptpubkey: bytes
-    value: Union[int, str] # Includes the 0.01 NMC locked inside name coins.
+    value: Union[int, str] # Includes the 0.01 DOGE locked inside name coins.
 
     def __init__(self, *, scriptpubkey: bytes, value: Union[int, str], is_display: bool = False):
         self.scriptpubkey = scriptpubkey
@@ -116,7 +116,7 @@ class TxOutput:
         name_script = bfh(name_op_to_script(name_op))
         self.scriptpubkey = name_script + self.scriptpubkey
 
-        # Name ops include an extra 0.01 NMC locked inside the output
+        # Name ops include an extra 0.01 DOGE locked inside the output
         self.value_display = value_display
 
     def serialize_to_network(self) -> bytes:
@@ -170,7 +170,7 @@ class TxOutput:
         if self.name_op is None:
             return self.value
 
-        # Name ops include an extra 0.01 NMC locked inside the output, which we
+        # Name ops include an extra 0.01 DOGE locked inside the output, which we
         # hide here.
         return self.value - COIN // 100
 
@@ -184,7 +184,7 @@ class TxOutput:
             self.value = value
             return
 
-        # Name ops include an extra 0.01 NMC locked inside the output, which we
+        # Name ops include an extra 0.01 DOGE locked inside the output, which we
         # add here.
         self.value = value + COIN // 100
 
@@ -852,7 +852,7 @@ class Transaction:
 
         return res
 
-    # TODO: Namecoin: Add the 0.01 NMC that's permanently locked in the name
+    # TODO: Namecoin: Add the 0.01 DOGE that's permanently locked in the name
     # when serializing outputs
     @classmethod
     def serialize_input(self, txin: TxInput, script: str) -> str:
@@ -1107,8 +1107,8 @@ def tx_from_any(raw: Union[str, bytes], *,
         return PartialTransaction.from_raw_psbt(raw)
     except BadHeaderMagic:
         if raw[:10] == b'EPTF\xff'.hex():
-            raise SerializationError("Partial transactions generated with old Electrum-NMC versions "
-                                     "(< 4.0) are no longer supported. Please upgrade Electrum-NMC on "
+            raise SerializationError("Partial transactions generated with old Electrum-DOGE versions "
+                                     "(< 4.0) are no longer supported. Please upgrade Electrum-DOGE on "
                                      "the other machine where this transaction was created.")
     try:
         tx = Transaction(raw)
@@ -1405,7 +1405,7 @@ class PartialTxInput(TxInput, PSBTSection):
         if self.name_op is None:
             return self.value_sats()
 
-        # Name ops include an extra 0.01 NMC locked inside the output, which we
+        # Name ops include an extra 0.01 DOGE locked inside the output, which we
         # hide here.
         return self.value_sats() - COIN // 100
 

@@ -248,7 +248,7 @@ class CommandsServer(AuthenticatedServer):
             else:
                 response = "error: current GUI does not support multiple windows"
         else:
-            response = "Error: Electrum-NMC is running in daemon mode. Please stop the daemon first."
+            response = "Error: Electrum-DOGE is running in daemon mode. Please stop the daemon first."
         return response
 
     async def run_cmdline(self, config_options):

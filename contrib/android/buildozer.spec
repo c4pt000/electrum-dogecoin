@@ -1,10 +1,10 @@
 [app]
 
 # (str) Title of your application
-title = Electrum-NMC
+title = Electrum-DOGE
 
 # (str) Package name
-package.name = Electrum_NMC
+package.name = Electrum_DOGE
 
 # (str) Package domain (needed for android/ios packaging)
 package.domain = org.namecoin.electrum_nmc

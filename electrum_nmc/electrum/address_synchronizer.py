@@ -825,14 +825,14 @@ class AddressSynchronizer(Logger):
         c = u = x = 0
         mempool_height = self.get_local_height() + 1  # height of next block
 
-        # Namecoin: get the utxos, so we can hide the 0.01 NMC in name ops
+        # Namecoin: get the utxos, so we can hide the 0.01 DOGE in name ops
         utxos = self.get_addr_utxo(address)
 
         for txo, (tx_height, v, is_cb) in received.items():
             if txo in excluded_coins:
                 continue
 
-            # Namecoin: check if it's a name op, so we can hide the 0.01 NMC
+            # Namecoin: check if it's a name op, so we can hide the 0.01 DOGE
             hidden_v = 0
             if txo not in sent:
                 prevout = TxOutpoint.from_str(txo)
@@ -843,7 +843,7 @@ class AddressSynchronizer(Logger):
                         # name_anyupdate has expired; hide the entire balance of this output
                         hidden_v = v
                     else:
-                        # Name is unexpired; only hide the 0.01 NMC
+                        # Name is unexpired; only hide the 0.01 DOGE
                         hidden_v = COIN // 100
 
             if is_cb and tx_height + COINBASE_MATURITY > mempool_height:

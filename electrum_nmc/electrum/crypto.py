@@ -181,7 +181,7 @@ class UnexpectedPasswordHashVersion(InvalidPassword, WalletFileException):
         return "{unexpected}: {version}\n{instruction}".format(
             unexpected=_("Unexpected password hash version"),
             version=self.version,
-            instruction=_('You are most likely using an outdated version of Electrum-NMC. Please update.'))
+            instruction=_('You are most likely using an outdated version of Electrum-DOGE. Please update.'))
 
 
 class UnsupportedPasswordHashVersion(InvalidPassword, WalletFileException):

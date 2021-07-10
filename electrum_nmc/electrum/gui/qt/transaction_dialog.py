@@ -87,7 +87,7 @@ def show_transaction(tx: Transaction, *, parent: 'ElectrumWindow', desc=None, pr
         d = TxDialog(tx, parent=parent, desc=desc, prompt_if_unsaved=prompt_if_unsaved)
     except SerializationError as e:
         _logger.exception('unable to deserialize the transaction')
-        parent.show_critical(_("Electrum-NMC was unable to deserialize the transaction:") + "\n" + str(e))
+        parent.show_critical(_("Electrum-DOGE was unable to deserialize the transaction:") + "\n" + str(e))
     else:
         d.show()
 
@@ -738,7 +738,7 @@ class PreviewTxDialog(BaseTxDialog, TxEditor):
 
         def feerounding_onclick():
             text = (self.feerounding_text + '\n\n' +
-                    _('To somewhat protect your privacy, Electrum-NMC tries to create change with similar precision to other outputs.') + ' ' +
+                    _('To somewhat protect your privacy, Electrum-DOGE tries to create change with similar precision to other outputs.') + ' ' +
                     _('At most 100 noise might be lost due to this rounding.') + ' ' +
                     _("You can disable this setting in '{}'.").format(_('Preferences')) + '\n' +
                     _('Also, dust is not kept as change, but added to the fee.')  + '\n' +

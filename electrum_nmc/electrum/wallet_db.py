@@ -459,9 +459,9 @@ class WalletDB(JsonDB):
                 channel['state'] = 'OPENING'
             self.put('channels', channels)
 
-        # Namecoin: Electrum-NMC 3.3.8 and earlier hid the locked 0.01 NMC in
+        # Namecoin: Electrum-DOGE 3.3.8 and earlier hid the locked 0.01 DOGE in
         # name outputs from the DB.  4.0.0 and higher don't do this anymore, so
-        # we need to add 0.01 NMC to every name output.  But, doing this
+        # we need to add 0.01 DOGE to every name output.  But, doing this
         # carefully is complex, so instead we just clear the history and let
         # everything recalculate.
         self.put('txi', None)
@@ -749,7 +749,7 @@ class WalletDB(JsonDB):
         if not seed_version:
             seed_version = OLD_SEED_VERSION if len(self.get('master_public_key','')) == 128 else NEW_SEED_VERSION
         if seed_version > FINAL_SEED_VERSION:
-            raise WalletFileException('This version of Electrum-NMC is too old to open this wallet.\n'
+            raise WalletFileException('This version of Electrum-DOGE is too old to open this wallet.\n'
                                       '(highest supported storage version: {}, version of this file: {})'
                                       .format(FINAL_SEED_VERSION, seed_version))
         if seed_version==14 and self.get('seed_type') == 'segwit':
@@ -772,7 +772,7 @@ class WalletDB(JsonDB):
                 msg += "\nIt does not contain any keys, and can safely be removed."
             else:
                 # creation was complete if electrum was run from source
-                msg += "\nPlease open this file with Electrum-NMC 1.9.8, and move your coins to a new wallet."
+                msg += "\nPlease open this file with Electrum-DOGE 1.9.8, and move your coins to a new wallet."
         raise WalletFileException(msg)
 
     @locked

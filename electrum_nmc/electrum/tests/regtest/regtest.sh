@@ -500,7 +500,7 @@ if [[ $1 == "name_registration" ]]; then
     assert_equal "$found" 1 "no name op found"
 
     echo "Check for exception with name_history and without -namehistory."
-    echo "TODO: Electrum-NMC doesn't support name_history yet."
+    echo "TODO: Electrum-DOGE doesn't support name_history yet."
 
     echo "first_update the names.  Check for too long values."
     #addr = node.getnewaddress ()
@@ -535,7 +535,7 @@ if [[ $1 == "name_registration" ]]; then
     assert_electrum_nx "$alice" "name-0"
     #assert_raises_rpc_error (-4, 'name not found',
     #                         node.name_history, "name-0")
-    echo "TODO: Electrum-NMC doesn't support name_history yet."
+    echo "TODO: Electrum-DOGE doesn't support name_history yet."
     #self.generateToOther (1)
     new_blocks 1
     wait_for_chain_sync "$alice"
@@ -561,11 +561,11 @@ if [[ $1 == "name_registration" ]]; then
     echo "Skipping height field."
 
     #self.checkNameHistory (0, "name-0", ["value-0"])
-    echo "TODO: Electrum-NMC doesn't support name_history yet."
+    echo "TODO: Electrum-DOGE doesn't support name_history yet."
     #self.checkNameHistory (0, "name-1", ["x" * 520])
-    echo "TODO: Electrum-NMC doesn't support name_history yet."
+    echo "TODO: Electrum-DOGE doesn't support name_history yet."
 
-    echo "Add enough confirmations to make Electrum-NMC happy."
+    echo "Add enough confirmations to make Electrum-DOGE happy."
     new_blocks 11
     wait_for_chain_sync "$alice"
     data_core=$($bitcoin_cli name_show name-0)

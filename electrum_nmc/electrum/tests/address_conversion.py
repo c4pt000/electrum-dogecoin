@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Electrum-NMC - lightweight Namecoin client
+# Electrum-DOGE - lightweight Namecoin client
 # Copyright (C) 2019-2020 Namecoin Developers
 #
 # Permission is hereby granted, free of charge, to any person

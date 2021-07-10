@@ -181,7 +181,7 @@ you close all your wallet windows. Use this to keep your local watchtower runnin
         # units
         units = base_units_list
         msg = (_('Base unit of your wallet.')
-               + '\n1 NMC = 1000 mNMC. 1 mNMC = 1000 uNMC. 1 uNMC = 100 noise.\n'
+               + '\n1 DOGE = 1000 mDOGE. 1 mDOGE = 1000 uDOGE. 1 uDOGE = 100 noise.\n'
                + _('This setting affects the Send tab, and all balance related fields.'))
         unit_label = HelpLabel(_('Base unit') + ':', msg)
         unit_combo = QComboBox()

@@ -3,7 +3,7 @@
 # Parameterize
 PYTHON_VERSION=3.7.9
 BUILDDIR=/tmp/electrum-nmc-build
-PACKAGE=Electrum-NMC
+PACKAGE=Electrum-DOGE
 GIT_REPO=https://github.com/namecoin/electrum-nmc
 
 export GCC_STRIP_BINARIES="1"

@@ -1,16 +1,16 @@
-# electrum-dogecoin-4.0.1 (experimental untested, no one sent me any dogecoin to test this client)
-
+# electrum-radiocoin-4.1.4-current
 for server https://github.com/c4pt000/electrumx-dogecoin-server-radiocoin-4.1.4
-<br>
-for radiocoin-electrum https://github.com/c4pt000/electrum-radiocoin
+
 
 <br>
 <br>
+<br>
+<br>
+<br>
+win10 release
 
-https://raw.githubusercontent.com/c4pt000/electrum-dogecoin/main/fedora-install.sh
-<br>
-https://raw.githubusercontent.com/c4pt000/electrum-dogecoin/main/ubuntu-install.sh
-<br>
+https://github.com/c4pt000/electrum-radiocoin/releases/tag/win10
+
 
 fedora 34
 <br>
@@ -22,15 +22,10 @@ docker run -it --net host -d -e "DISPLAY=${DISPLAY:-:0.0}" -v /tmp/.X11-unix:/tm
 
 cd /opt
  yum install git nano wget -y
- git clone https://github.com/c4pt000/electrum-dogecoin
- cd electrum-dogecoin
- sh fedora-install.sh
+ git clone https://github.com/c4pt000/electrum-radiocoin
+ cd electrum-radiocoin
+ sh install-radiocoin-electrum.sh 
 ```
-
-
-
-
-# original notes radiocoin-electrum "errata" 
 
  * todo hardcode  a minimum of 1.00 RADC fee to send (with electrum)
 

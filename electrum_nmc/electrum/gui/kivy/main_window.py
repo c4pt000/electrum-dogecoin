@@ -944,8 +944,8 @@ class ElectrumWindow(App):
                 from plyer import notification
             icon = (os.path.dirname(os.path.realpath(__file__))
                     + '/../../' + self.icon)
-            notification.notify('Electrum-NMC', message,
-                            app_icon=icon, app_name='Electrum-NMC')
+            notification.notify('Electrum-DOGE', message,
+                            app_icon=icon, app_name='Electrum-DOGE')
         except ImportError:
             Logger.Error('Notification: needs plyer; `sudo python3 -m pip install plyer`')
 
@@ -1170,7 +1170,7 @@ class ElectrumWindow(App):
             else:
                 self.show_info('This wallet has channels')
         else:
-            warning1 = _("Lightning support in Electrum-NMC is experimental. Do not put large amounts in lightning channels.")
+            warning1 = _("Lightning support in Electrum-DOGE is experimental. Do not put large amounts in lightning channels.")
             warning2 = _("Funds stored in lightning channels are not recoverable from your seed. You must backup your wallet file everytime you create a new channel.")
             d = Question(_('Enable Lightning?') + '\n\n' + warning1 + '\n\n' + warning2, self._enable_lightning)
             d.open()

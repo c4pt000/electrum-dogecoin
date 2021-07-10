@@ -1,6 +1,6 @@
 include LICENCE RELEASE-NOTES AUTHORS
 include README.rst
-include electrum-nmc.desktop
+include electrum-doge.desktop
 include *.py
 include run_electrum_nmc
 recursive-include packages *.py

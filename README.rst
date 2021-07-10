@@ -1,4 +1,4 @@
-Electrum-NMC - Lightweight Namecoin client
+Electrum-DOGE - Lightweight Namecoin client
 =====================================
 
 ::
@@ -26,11 +26,11 @@ Electrum-NMC - Lightweight Namecoin client
 Getting started
 ===============
 
-(*If you've come here looking to simply run Electrum-NMC,* `you may download it here`_.)
+(*If you've come here looking to simply run Electrum-DOGE,* `you may download it here`_.)
 
 .. _you may download it here: https://www.namecoin.org/download/betas/
 
-Electrum-NMC itself is pure Python, and so are most of the required dependencies,
+Electrum-DOGE itself is pure Python, and so are most of the required dependencies,
 but not everything. The following sections describe how to run from source, but here
 is a TL;DR::
 
@@ -72,19 +72,19 @@ Running from tar.gz
 -------------------
 
 If you downloaded the official package (tar.gz), you can run
-Electrum-NMC from its root directory without installing it on your
+Electrum-DOGE from its root directory without installing it on your
 system; all the pure python dependencies are included in the 'packages'
-directory. To run Electrum-NMC from its root directory, just do::
+directory. To run Electrum-DOGE from its root directory, just do::
 
     ./run_electrum_nmc
 
-You can also install Electrum-NMC on your system, by running this command::
+You can also install Electrum-DOGE on your system, by running this command::
 
     sudo apt-get install python3-setuptools python3-pip
     python3 -m pip install --user .
 
 This will download and install the Python dependencies used by
-Electrum-NMC instead of using the 'packages' directory.
+Electrum-DOGE instead of using the 'packages' directory.
 It will also place an executable named :code:`electrum-nmc` in :code:`~/.local/bin`,
 so make sure that is on your :code:`PATH` variable.
 
@@ -161,4 +161,4 @@ See :code:`contrib/android/Readme.md`.
 AuxPoW Branch
 =============
 
-Electrum-NMC also maintains an ``auxpow`` branch.  This branch is identical to the upstream Bitcoin version of Electrum (e.g. it doesn't have any name support or Namecoin rebranding), except that it supports AuxPoW (merged mining).  It may be useful as a starting point for porting Electrum to other AuxPoW-based cryptocurrencies.
+Electrum-DOGE also maintains an ``auxpow`` branch.  This branch is identical to the upstream Bitcoin version of Electrum (e.g. it doesn't have any name support or Namecoin rebranding), except that it supports AuxPoW (merged mining).  It may be useful as a starting point for porting Electrum to other AuxPoW-based cryptocurrencies.

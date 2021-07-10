@@ -55,7 +55,7 @@ $PYTHON -m pip install --no-dependencies --no-warn-script-location -r "$CONTRIB"
 
 pushd $WINEPREFIX/drive_c/electrum-nmc
 # see https://github.com/pypa/pip/issues/2195 -- pip makes a copy of the entire directory
-info "Pip installing Electrum-NMC. This might take a long time if the project folder is large."
+info "Pip installing Electrum-DOGE. This might take a long time if the project folder is large."
 $PYTHON -m pip install --no-dependencies --no-warn-script-location .
 popd
 

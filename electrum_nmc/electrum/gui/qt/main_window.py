@@ -550,8 +550,8 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         if self.wallet.is_watching_only():
             msg = ' '.join([
                 _("This wallet is watching-only."),
-                _("This means you will not be able to spend Radiocoins or update names with it."),
-                _("Make sure you own the seed phrase or the private keys, before you request Radiocoins or names to be sent to this wallet.")
+                _("This means you will not be able to spend Dogecoins or update names with it."),
+                _("Make sure you own the seed phrase or the private keys, before you request Dogecoins or names to be sent to this wallet.")
             ])
             self.show_warning(msg, title=_('Watch-only wallet'))
 
@@ -568,7 +568,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         msg = ''.join([
             _("You are in testnet mode."), ' ',
             _("Testnet coins and names are worthless."), '\n',
-            _("Testnet is separate from the main Radiocoin network. It is used for testing.")
+            _("Testnet is separate from the main Dogecoin network. It is used for testing.")
         ])
         cb = QCheckBox(_("Don't show this again."))
         cb_checked = False
@@ -757,7 +757,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
 
         help_menu = menubar.addMenu(_("&Help"))
         help_menu.addAction(_("&About"), self.show_about)
-        help_menu.addAction(_("&Official website"), lambda: webopen("https://github.com/c4pt000/electrum-radiocoin"))
+        help_menu.addAction(_("&Official website"), lambda: webopen("https://github.com/c4pt000/electrum-dogecoin"))
         help_menu.addAction(_("&Official blockexplorer"), lambda: webopen("http://radioblockchain.info/"))
         help_menu.addSeparator()
         help_menu.addAction(_("&Documentation"), lambda: webopen("http://docs.electrum.org/")).setShortcut(QKeySequence.HelpContents)
@@ -771,20 +771,20 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         d = self.network.get_donation_address()
         if d:
             host = self.network.get_parameters().server.host
-            self.pay_to_URI('radiocoin:%s?message=donation for %s'%(d, host))
+            self.pay_to_URI('dogecoin%s?message=donation for %s'%(d, host))
         else:
             self.show_error(_('No donation address for this server'))
 
     def show_about(self):
         QMessageBox.about(self, "Electrum-DOGE",
                           (_("Version")+" %s" % ELECTRUM_VERSION + "\n\n" +
-                           _("Electrum-DOGE's focus is speed, with low resource usage and simplifying Radiocoin.") + " " +
+                           _("Electrum-DOGE's focus is speed, with low resource usage and simplifying Dogecoin.") + " " +
                            _("You do not need to perform regular backups, because your wallet can be "
                               "recovered from a secret phrase that you can memorize or write on paper.") + " " +
                            _("Startup times are instant because it operates in conjunction with high-performance "
-                              "servers that handle the most complicated parts of the Radiocoin system.") + "\n\n" +
+                              "servers that handle the most complicated parts of the Dogecoin system.") + "\n\n" +
                            _("https://github.com/c4pt000/radioCOIN ") + "\n\n" +
-                           _("https://github.com/c4pt000/electrum-radiocoin") + "\n\n" +
+                           _("https://github.com/c4pt000/electrum-dogecoin") + "\n\n" +
                            _("http://radioblockchain.info/ ")))
 
     def show_update_check(self, version=None):
@@ -970,7 +970,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
                 icon = read_QIcon("status_lagging%s.png"%fork_str)
             else:
                 c, u, x = self.wallet.get_balance(hide_expired=False)
-                text = _("Radiocoin electrum-4.0.1-current" )
+                text = _("Dogecoin electrum-4.0.1-current" )
 #                text =  (self.format_amount_and_units(c))
 #                text =  _("Balance" ) + ": %s  "%(self.format_units(c))
 #                text =  _("Balance" ) + ":  "%(self.format_amount_and_units(c))
@@ -1102,8 +1102,8 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         msg = ' '.join([
             _('Expiration date of your request.'),
             _('This information is seen by the recipient if you send them a signed payment request.'),
-            _('Expired requests have to be deleted manually from your list, in order to free the corresponding Radiocoin addresses.'),
-            _('The Radiocoin address never expires and will always be part of this electrum-DOGE wallet.'),
+            _('Expired requests have to be deleted manually from your list, in order to free the corresponding Dogecoin addresses.'),
+            _('The Dogecoin address never expires and will always be part of this electrum-DOGE wallet.'),
         ])
 #        grid.addWidget(HelpLabel(_('Expires after'), msg), 2, 0)
 #        grid.addWidget(self.expires_combo, 2, 1)
@@ -1332,7 +1332,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         self.amount_e = BTCAmountEdit(self.get_decimal_point)
         self.payto_e = PayToEdit(self)
         msg = _('Recipient of the funds.') + '\n\n'\
-              + _('You may enter a Radiocoin address, a label from your list of contacts (a list of completions will be proposed), or an alias (email-like address that forwards to a Radiocoin address)')
+              + _('You may enter a Dogecoin address, a label from your list of contacts (a list of completions will be proposed), or an alias (email-like address that forwards to a Dogecoin address)')
         payto_label = HelpLabel(_('Pay to'), msg)
         grid.addWidget(payto_label, 1, 0)
         grid.addWidget(self.payto_e, 1, 1, 1, -1)
@@ -1466,7 +1466,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
 
         for o in outputs:
             if o.scriptpubkey is None:
-                self.show_error(_('Radiocoin Address is None'))
+                self.show_error(_('Dogecoin Address is None'))
                 return True
             if o.value_display is None:
                 self.show_error(_('Invalid Amount'))
@@ -2058,7 +2058,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         grid.addWidget(QLabel(_("Node ID") + ':'), 0, 0)
         grid.addWidget(QLabel(lnaddr.pubkey.serialize().hex()), 0, 1)
         grid.addWidget(QLabel(_("Amount") + ':'), 1, 0)
-        # TODO: Namecoin: use invoice.amount_display (to hide 0.01 NMC in name
+        # TODO: Namecoin: use invoice.amount_display (to hide 0.01 DOGE in name
         # coins).
         amount_str = self.format_amount(invoice.get_amount_sat()) + ' ' + self.base_unit()
         grid.addWidget(QLabel(amount_str), 1, 1)
@@ -2472,7 +2472,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         address  = address.text().strip()
         message = message.toPlainText().strip()
         if not bitcoin.is_address(address):
-            self.show_message(_('Invalid Radiocoin address.'))
+            self.show_message(_('Invalid Dogecoin address.'))
             return
         if self.wallet.is_watching_only():
             self.show_message(_('This is a watching-only wallet.'))
@@ -2500,7 +2500,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         address  = address.text().strip()
         message = message.toPlainText().strip().encode('utf-8')
         if not bitcoin.is_address(address):
-            self.show_message(_('Invalid Radiocoin address.'))
+            self.show_message(_('Invalid Dogecoin address.'))
             return
         try:
             # This can throw on invalid base64
@@ -2655,7 +2655,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         if not data:
             return
         # if the user scanned a bitcoin URI
-        if str(data).startswith("radiocoin:"):
+        if str(data).startswith("dogecoin"):
             self.pay_to_URI(data)
             return
         if data.startswith('channel_backup:'):
@@ -3251,7 +3251,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
 
         # TODO: allow hex names
         self.buy_names_new_name_lineedit = QLineEdit()
-        self.buy_names_new_name_lineedit.setToolTip(_("Enter a name to be registered via Radiocoin."))
+        self.buy_names_new_name_lineedit.setToolTip(_("Enter a name to be registered via Dogecoin."))
         self.buy_names_new_name_lineedit.textChanged.connect(self.update_buy_names_preview)
         vbox.addWidget(self.buy_names_new_name_lineedit)
 

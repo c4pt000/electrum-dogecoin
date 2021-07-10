@@ -6,7 +6,7 @@
 ;--------------------------------
 ;Variables
 
-  !define PRODUCT_NAME "Electrum-NMC"
+  !define PRODUCT_NAME "Electrum-DOGE"
   !define PRODUCT_WEB_SITE "https://www.namecoin.org/"
   !define PRODUCT_PUBLISHER "Namecoin Project"
   !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
