@@ -25,8 +25,13 @@ cd /opt
  yum install git nano wget -y
  git clone https://github.com/c4pt000/electrum-dogecoin
  cd electrum-dogecoin
- sh install-radiocoin-electrum.sh 
+ sh fedora-install.sh
 ```
+
+
+
+
+# original notes radiocoin-electrum "errata" 
 
  * todo hardcode  a minimum of 1.00 RADC fee to send (with electrum)
 
