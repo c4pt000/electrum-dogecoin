@@ -90,7 +90,7 @@ class Exception_Window(BaseCrashReporter, QWidget, MessageBoxMixin, Logger):
         report_button.setIcon(read_QIcon("tab_send.png"))
         buttons.addWidget(report_button)
 
-        never_button = QPushButton(_('Never'))
+       # never_button = QPushButton(_('Never'))
         never_button.clicked.connect(self.show_never)
         buttons.addWidget(never_button)
 

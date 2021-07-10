@@ -2,11 +2,13 @@
 
 # Form implementation generated from reading ui file 'electrum_nmc/electrum/gui/qt/forms/dnsdialog.ui'
 #
-# Created by: PyQt5 UI code generator 5.10.1
+# Created by: PyQt5 UI code generator 5.14.1
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_DNSDialog(object):
     def setupUi(self, DNSDialog):
@@ -583,8 +585,8 @@ class Ui_DNSDialog(object):
         self.labelOfTotal.setText(_translate("DNSDialog", "/ 520"))
         self.btnDeleteRecord.setText(_translate("DNSDialog", "Delete Record"))
         self.btnEditRecord.setText(_translate("DNSDialog", "Edit Record"))
-
 from .qvalidatedlineedit import QValidatedLineEdit
+
 
 if __name__ == "__main__":
     import sys
@@ -594,4 +596,3 @@ if __name__ == "__main__":
     ui.setupUi(DNSDialog)
     DNSDialog.show()
     sys.exit(app.exec_())
-

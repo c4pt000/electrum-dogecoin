@@ -2,11 +2,13 @@
 
 # Form implementation generated from reading ui file 'electrum_nmc/electrum/gui/qt/forms/configurenamedialog.ui'
 #
-# Created by: PyQt5 UI code generator 5.10.1
+# Created by: PyQt5 UI code generator 5.14.1
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_ConfigureNameDialog(object):
     def setupUi(self, ConfigureNameDialog):
@@ -108,8 +110,8 @@ class Ui_ConfigureNameDialog(object):
         self.labelTransferToHint.setText(_translate("ConfigureNameDialog", "(Leave empty if not transferring.)"))
         self.dataEdit.setToolTip(_translate("ConfigureNameDialog", "Enter JSON string that will be associated with the name"))
         self.btnDNSEditor.setText(_translate("ConfigureNameDialog", "DNS Editor…"))
-
 from .qpaytoedit import QPayToEdit
+
 
 if __name__ == "__main__":
     import sys
@@ -119,4 +121,3 @@ if __name__ == "__main__":
     ui.setupUi(ConfigureNameDialog)
     ConfigureNameDialog.show()
     sys.exit(app.exec_())
-
