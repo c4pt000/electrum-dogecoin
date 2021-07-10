@@ -8,7 +8,9 @@ for radiocoin-electrum https://github.com/c4pt000/electrum-radiocoin
 <br>
 
 https://raw.githubusercontent.com/c4pt000/electrum-dogecoin/main/fedora-install.sh
+<br>
 https://raw.githubusercontent.com/c4pt000/electrum-dogecoin/main/ubuntu-install.sh
+<br>
 
 fedora 34
 <br>
