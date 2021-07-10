@@ -1,5 +1,7 @@
 # electrum-dogecoin-4.0.1 (experimental untested, no one sent me any dogecoin to test this client)
 
+* based off of electrum-nmc
+
 for server https://github.com/c4pt000/electrumx-dogecoin-server-radiocoin-4.1.4
 <br>
 for radiocoin-electrum https://github.com/c4pt000/electrum-radiocoin
