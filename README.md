@@ -6,13 +6,9 @@ for radiocoin-electrum https://github.com/c4pt000/electrum-radiocoin
 
 <br>
 <br>
-<br>
-<br>
-<br>
-win10 release
 
-https://github.com/c4pt000/electrum-radiocoin/releases/tag/win10
-
+https://raw.githubusercontent.com/c4pt000/electrum-dogecoin/main/fedora-install.sh
+https://raw.githubusercontent.com/c4pt000/electrum-dogecoin/main/ubuntu-install.sh
 
 fedora 34
 <br>
