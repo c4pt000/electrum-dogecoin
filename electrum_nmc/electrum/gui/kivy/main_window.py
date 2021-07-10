@@ -929,7 +929,7 @@ class ElectrumWindow(App):
 
     def format_fee_rate(self, fee_rate):
         # fee_rate is in sat/kB
-        return format_fee_satoshis(fee_rate/1000) + ' noise/byte'
+        return format_fee_satoshis(fee_rate/1000) + ' microscopicdoges/byte'
 
     #@profiler
     def update_wallet(self, *dt):

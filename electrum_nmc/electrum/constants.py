@@ -107,29 +107,30 @@ class BitcoinMainnet(AbstractNet):
 class BitcoinTestnet(AbstractNet):
 
     TESTNET = True
-    WIF_PREFIX = 239
-    ADDRTYPE_P2PKH = 111
+    WIF_PREFIX = 231
+    ADDRTYPE_P2PKH = 113
     ADDRTYPE_P2SH = 196
     SEGWIT_HRP = "tn"
-    GENESIS = "00000007199508e34a9ff81e6ec0c477a4cccff2a4767a8eee39c11db367b008"
-    DEFAULT_PORTS = {'t': '51001', 's': '51002'}
+    GENESIS = "bb0a78264637406b6360aad926284d544d7049f45189db5664f3c4d07350559e"
+    DEFAULT_PORTS = {'t': '50011', 's': '50022'}
     DEFAULT_SERVERS = read_json('servers_testnet.json', {})
-    CHECKPOINTS = read_json('checkpoints_testnet.json', [])
+    CHECKPOINTS = read_json('', [])
 
     XPRV_HEADERS = {
         'standard':    0x04358394,  # tprv
-        'p2wpkh-p2sh': 0x044a4e28,  # uprv
-        'p2wsh-p2sh':  0x024285b5,  # Uprv
-        'p2wpkh':      0x045f18bc,  # vprv
-        'p2wsh':       0x02575048,  # Vprv
+#        'p2wpkh-p2sh': 0x044a4e28,  # uprv
+#        'p2wsh-p2sh':  0x024285b5,  # Uprv
+#        'p2wpkh':      0x045f18bc,  # vprv
+#        'p2wsh':       0x02575048,  # Vprv
     }
     XPRV_HEADERS_INV = inv_dict(XPRV_HEADERS)
     XPUB_HEADERS = {
-        'standard':    0x043587cf,  # tpub
-        'p2wpkh-p2sh': 0x044a5262,  # upub
-        'p2wsh-p2sh':  0x024289ef,  # Upub
-        'p2wpkh':      0x045f1cf6,  # vpub
-        'p2wsh':       0x02575483,  # Vpub
+
+        'standard':    0x043587cf, #xpub
+#        'p2wpkh-p2sh': 0x044a5262,  # upub
+#        'p2wsh-p2sh':  0x024289ef,  # Upub
+#        'p2wpkh':      0x045f1cf6,  # vpub
+#        'p2wsh':       0x02575483,  # Vpub
     }
     XPUB_HEADERS_INV = inv_dict(XPUB_HEADERS)
     BIP44_COIN_TYPE = 1

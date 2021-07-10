@@ -252,7 +252,7 @@ class SimpleConfig(Logger):
         base_unit = self.user_config.get('base_unit')
         if isinstance(base_unit, str):
             self._set_key_in_user_config('base_unit', None)
-            map_ = {'nmc':8, 'mnmc':5, 'unmc':2, 'bits':2, 'noise':0}
+            map_ = {'nmc':8, 'mnmc':5, 'unmc':2, 'bits':2, 'microscopicdoges':0}
             decimal_point = map_.get(base_unit.lower())
             self._set_key_in_user_config('decimal_point', decimal_point)
 
@@ -462,7 +462,7 @@ class SimpleConfig(Logger):
         else:
 #            fee_rate = fee_rate/1000
             fee_rate = 1.000
-            rate_str = format_fee_satoshis(fee_rate) + ' noise/byte'
+            rate_str = format_fee_satoshis(fee_rate) + ' microscopicdoges/byte'
 
         if dyn:
             if mempool:
@@ -661,7 +661,7 @@ class SimpleConfig(Logger):
         return self.format_amount(amount) + ' '+ self.get_base_unit()
 
     def format_fee_rate(self, fee_rate):
-        return format_fee_satoshis(fee_rate/1000, num_zeros=self.num_zeros) + ' noise/byte'
+        return format_fee_satoshis(fee_rate/1000, num_zeros=self.num_zeros) + ' microscopicdoges/byte'
 
     def get_base_unit(self):
         return decimal_point_to_base_unit_name(self.decimal_point)
