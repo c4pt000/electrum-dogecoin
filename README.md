@@ -1,7 +1,7 @@
 # electrum-dogecoin-4.0.1 (experimental untested, no one sent me any dogecoin to test this client)
 
 for the older dogecoin 2.2.1 original client 
-https://raw.github.com/c4pt000/electrum-wallet-doge
+https://github.com/c4pt000/electrum-wallet-doge
 
 ![s1](https://raw.githubusercontent.com/c4pt000/electrum-dogecoin/main/electrum-receive.png)
 ![s1](https://raw.githubusercontent.com/c4pt000/electrum-dogecoin/main/electrum-receive.png)
