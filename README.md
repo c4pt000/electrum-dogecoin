@@ -7,6 +7,8 @@ https://github.com/c4pt000/electrum-wallet-doge
 ![s1](https://raw.githubusercontent.com/c4pt000/electrum-dogecoin/main/electrum-receive.png)
 
 protocol must be set 1.4 (instead of 0.9 or less than 1.4)
+2.2.1 client https://raw.githubusercontent.com/c4pt000/electrum-wallet-doge/master/lib/version.py
+in 4.0.1 its part of servers.json and version.py
 
 edit servers in wallet for new nodes or server creation 
 
