@@ -1,6 +1,7 @@
-# electrum-radiocoin-4.1.4-current
-for server https://github.com/c4pt000/electrumx-dogecoin-server-radiocoin-4.1.4
+# electrum-dogecoin-4.0.1
 
+for server https://github.com/c4pt000/electrumx-dogecoin-server-radiocoin-4.1.4
+for radiocoin-electrum https://github.com/c4pt000/electrum-radiocoin
 
 <br>
 <br>
@@ -22,8 +23,8 @@ docker run -it --net host -d -e "DISPLAY=${DISPLAY:-:0.0}" -v /tmp/.X11-unix:/tm
 
 cd /opt
  yum install git nano wget -y
- git clone https://github.com/c4pt000/electrum-radiocoin
- cd electrum-radiocoin
+ git clone https://github.com/c4pt000/electrum-dogecoin
+ cd electrum-dogecoin
  sh install-radiocoin-electrum.sh 
 ```
 
