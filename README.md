@@ -11,6 +11,7 @@ https://raw.githubusercontent.com/c4pt000/electrum-dogecoin/main/fedora-install.
 <br>
 https://raw.githubusercontent.com/c4pt000/electrum-dogecoin/main/ubuntu-install.sh
 <br>
+https://github.com/c4pt000/electrum-dogecoin/releases/download/win10/electrum-dogecoin-4.0.1-setup.exe
 
 fedora 34
 <br>
