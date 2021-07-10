@@ -73,9 +73,9 @@ def inv_dict(d):
 ca_path = certifi.where()
 
 
-base_units = {'RADC':8, 'mRADC':5, 'uRADC':2, 'radiowaves':0}
+base_units = {'DOGE':8, 'mDOGE':5, 'uDOGE':2, 'microscopicdoges':0}
 base_units_inverse = inv_dict(base_units)
-base_units_list = ['RADC', 'mRADC', 'uRADC', 'radiowaves']  # list(dict) does not guarantee order
+base_units_list = ['DOGE', 'mDOGE', 'uDOGE', 'microscopicdoges']  # list(dict) does not guarantee order
 
 DECIMAL_POINT_DEFAULT = 5  # mBTC
 
@@ -534,11 +534,11 @@ def user_dir():
     elif 'ANDROID_DATA' in os.environ:
         return android_data_dir()
     elif os.name == 'posix':
-        return os.path.join(os.environ["HOME"], ".electrum-radc")
+        return os.path.join(os.environ["HOME"], ".electrum-doge")
     elif "APPDATA" in os.environ:
-        return os.path.join(os.environ["APPDATA"], "Electrum-RADC")
+        return os.path.join(os.environ["APPDATA"], "Electrum-DOGE")
     elif "LOCALAPPDATA" in os.environ:
-        return os.path.join(os.environ["LOCALAPPDATA"], "Electrum-RADC")
+        return os.path.join(os.environ["LOCALAPPDATA"], "ElectrumDOGE")
     else:
         #raise Exception("No home directory found in environment variables.")
         return
@@ -711,7 +711,7 @@ def time_difference(distance_in_time, include_seconds):
         return "over %d years" % (round(distance_in_minutes / 525600))
 
 mainnet_block_explorers = {
-    'radioblockchain.info': ('http://radioblockchain.info/',
+    'https://live.blockcypher.com/doge/': ('https://live.blockcypher.com/doge/',
                         {'tx': 'tx/', 'addr': 'address/'}),
 }
 

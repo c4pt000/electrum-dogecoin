@@ -46,7 +46,7 @@ GIT_REPO_ISSUES_URL = "https://github.com/namecoin/electrum-nmc/issues"
 
 class AbstractNet:
 
-    BLOCK_HEIGHT_FIRST_LIGHTNING_CHANNELS = 100
+    BLOCK_HEIGHT_FIRST_LIGHTNING_CHANNELS = 0
 
     @classmethod
     def max_checkpoint(cls) -> int:
@@ -69,50 +69,39 @@ class BitcoinMainnet(AbstractNet):
 
     TESTNET = False
     WIF_PREFIX = 158
-    ADDRTYPE_P2PKH = 60
+    ADDRTYPE_P2PKH = 30
     ADDRTYPE_P2SH = 22
-    SEGWIT_HRP = "radc"
-#   GENESIS = "000000000062b72c5e2ceb45fbc8587e807c155b0da735e6483dfba2f0a9c770"
-    GENESIS = "000007ce46e6c59844c34fa7ba5b27c8dac0653a27fcfb7340cc0158849e4afd"
-    DEFAULT_PORTS = {'t': '50001', 's': '50002'}
+#    SEGWIT_HRP = "doge"
+    GENESIS = "1a91e3dace36e2be3bf030a65679fe821aa1d6ef92e7c9902eb318182c355691"
+    DEFAULT_PORTS = {'t': '50011', 's': '50022'}
     DEFAULT_SERVERS = read_json('servers.json', {})
-    CHECKPOINTS = read_json('checkpoints.json', [])
-#    CHECKPOINTS = read_json('', [])
-    BLOCK_HEIGHT_FIRST_LIGHTNING_CHANNELS = 200
-
-#BITCOIN_HEADER_PRIV = "02fac398"
-#BITCOIN_HEADER_PUB = "02facafd"
+    CHECKPOINTS = read_json('', [])
+    BLOCK_HEIGHT_FIRST_LIGHTNING_CHANNELS = 497000
 
     XPRV_HEADERS = {
-        'standard':    0x02fac398,  # xprv
-#        'p2wpkh-p2sh': 0x02fac398,  # yprv
-#        'p2wsh-p2sh':  0x02fac398,    # Yprv
-#        'p2wpkh':      0x02fac398,    # zprv
-#        'p2wsh':       0x02fac398,    # Zprv
+        'standard':    0x02fac398,  # 0x0488ade4,  # xprv
+#        'p2wpkh-p2sh': 0x049d7878,  # yprv
+#        'p2wsh-p2sh':  0x0295b005,  # Yprv
+#        'p2wpkh':      0x04b2430c,  # zprv
+#        'p2wsh':       0x02aa7a99,  # Zprv
     }
     XPRV_HEADERS_INV = inv_dict(XPRV_HEADERS)
     XPUB_HEADERS = {
-        'standard':    0x02facafd,  # xpub
-#        'p2wpkh-p2sh': 0x02facafd,  # ypub
-#        'p2wsh-p2sh':  0x02facafd,  # Ypub
-#        'p2wpkh':      0x02facafd,  # zpub
-#        'p2wsh':       0x02facafd,  # Zpub
+        'standard':    0x02facafd,   #xpub        orig# 0x0488b21e,  # xpub
+#        'p2wpkh-p2sh': 0x049d7cb2,  # ypub
+#        'p2wsh-p2sh':  0x0295b43f,  # Ypub
+#        'p2wpkh':      0x04b24746,  # zpub
+#        'p2wsh':       0x02aa7ed3,  # Zpub
     }
     XPUB_HEADERS_INV = inv_dict(XPUB_HEADERS)
-#    BIP44_COIN_TYPE = 1
-
-#namecoin
-#   BIP44_COIN_TYPE = 7
-
-# dogecoin
-    BIP44_COIN_TYPE = 1
+    BIP44_COIN_TYPE = 3
     LN_REALM_BYTE = 0
     LN_DNS_SEEDS = []
 
-    AUXPOW_CHAIN_ID = 0x00620004
-    AUXPOW_START_HEIGHT = 0
+    AUXPOW_CHAIN_ID = 0x0062
+    AUXPOW_START_HEIGHT = 19200
 
-    NAME_EXPIRATION = 60
+    NAME_EXPIRATION = 36000
 
 
 class BitcoinTestnet(AbstractNet):
@@ -121,34 +110,34 @@ class BitcoinTestnet(AbstractNet):
     WIF_PREFIX = 239
     ADDRTYPE_P2PKH = 111
     ADDRTYPE_P2SH = 196
-    SEGWIT_HRP = "xradc"
-    GENESIS = "00000a2ee9363d21e47bc10d5b1e39d4ae4bd950491790e522f90dad86d2d1eb"
-#    GENESIS = "00000007199508e34a9ff81e6ec0c477a4cccff2a4767a8eee39c11db367b008"
+    SEGWIT_HRP = "tn"
+    GENESIS = "00000007199508e34a9ff81e6ec0c477a4cccff2a4767a8eee39c11db367b008"
     DEFAULT_PORTS = {'t': '51001', 's': '51002'}
     DEFAULT_SERVERS = read_json('servers_testnet.json', {})
     CHECKPOINTS = read_json('checkpoints_testnet.json', [])
+
     XPRV_HEADERS = {
         'standard':    0x04358394,  # tprv
-#        'p2wpkh-p2sh': 0x044a4e28,  # uprv
-#        'p2wsh-p2sh':  0x024285b5,  # Uprv
-#        'p2wpkh':      0x045f18bc,  # vprv
-#        'p2wsh':       0x02575048,  # Vprv
+        'p2wpkh-p2sh': 0x044a4e28,  # uprv
+        'p2wsh-p2sh':  0x024285b5,  # Uprv
+        'p2wpkh':      0x045f18bc,  # vprv
+        'p2wsh':       0x02575048,  # Vprv
     }
     XPRV_HEADERS_INV = inv_dict(XPRV_HEADERS)
     XPUB_HEADERS = {
         'standard':    0x043587cf,  # tpub
-#        'p2wpkh-p2sh': 0x044a5262,  # upub
-#        'p2wsh-p2sh':  0x024289ef,  # Upub
-#        'p2wpkh':      0x045f1cf6,  # vpub
-#        'p2wsh':       0x02575483,  # Vpub
+        'p2wpkh-p2sh': 0x044a5262,  # upub
+        'p2wsh-p2sh':  0x024289ef,  # Upub
+        'p2wpkh':      0x045f1cf6,  # vpub
+        'p2wsh':       0x02575483,  # Vpub
     }
     XPUB_HEADERS_INV = inv_dict(XPUB_HEADERS)
-    BIP44_COIN_TYPE = 3
+    BIP44_COIN_TYPE = 1
     LN_REALM_BYTE = 1
     LN_DNS_SEEDS = []
 
-    AUXPOW_CHAIN_ID = 0x0062
-    AUXPOW_START_HEIGHT = 200
+    AUXPOW_CHAIN_ID = 0x0001
+    AUXPOW_START_HEIGHT = 0
 
     NAME_EXPIRATION = 36000
 

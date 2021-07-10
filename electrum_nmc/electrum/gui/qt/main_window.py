@@ -287,9 +287,9 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
 
         # If the option hasn't been set yet
 #        if config.get('check_updates') is None:
-#            choice = self.question(title="Electrum-RADC - " + _("Enable update check"),
-#                                   msg=_("For security reasons we advise that you always use the latest version of Electrum-RADC.") + " " +
-#                                       _("Would you like to be notified when there is a newer version of Electrum-RADC available?"))
+#            choice = self.question(title="Electrum-DOGE - " + _("Enable update check"),
+#                                   msg=_("For security reasons we advise that you always use the latest version of Electrum-DOGE.") + " " +
+#                                       _("Would you like to be notified when there is a newer version of Electrum-DOGE available?"))
 #            config.set_key('check_updates', bool(choice), save=True)
 
 #        if config.get('check_updates', False):
@@ -297,7 +297,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
             # to prevent GC from getting in our way.
 #            def on_version_received(v):
 #                if UpdateCheck.is_newer(v):
-#                    self.update_check_button.setText(_("Update to Electrum-RADC {} is available").format(v))
+#                    self.update_check_button.setText(_("Update to Electrum-DOGE {} is available").format(v))
 #                    self.update_check_button.clicked.connect(lambda: self.show_update_check(v))
 #                    self.update_check_button.show()
 #            self._update_check_thread = UpdateCheckThread()
@@ -533,7 +533,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
             self.setGeometry(100, 100, 840, 400)
 
     def watching_only_changed(self):
-        name = "Electrum-RADC Testnet" if constants.net.TESTNET else "Electrum-RADC"
+        name = "Electrum-DOGE Testnet" if constants.net.TESTNET else "Electrum-DOGE"
         title = '%s %s  -  %s' % (name, ELECTRUM_VERSION,
                                         self.wallet.basename())
         extra = [self.wallet.db.get('wallet_type', '?')]
@@ -624,7 +624,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         try:
             new_path = self.wallet.save_backup()
         except BaseException as reason:
-            self.show_critical(_("Electrum-RADC was unable to copy your wallet file to the specified location.") + "\n" + str(reason), title=_("Unable to create backup"))
+            self.show_critical(_("Electrum-DOGE was unable to copy your wallet file to the specified location.") + "\n" + str(reason), title=_("Unable to create backup"))
             return
         if new_path:
             msg = _("A copy of your wallet file was created in")+" '%s'" % str(new_path)
@@ -734,7 +734,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
             # Hence, this menu item will be at a "uniform location re macOS processes"
             preferences_action.setMenuRole(QAction.PreferencesRole)  # make sure OS recognizes it as preferences
             # Add another preferences item, to also have a "uniform location for Electrum between different OSes"
-            tools_menu.addAction(_("Electrum-RADC preferences"), self.settings_dialog)
+            tools_menu.addAction(_("Electrum-DOGE preferences"), self.settings_dialog)
 
         tools_menu.addAction(_("&Network"), self.gui_object.show_network_dialog).setEnabled(bool(self.network))
         tools_menu.addAction(_("&Lightning Network"), self.gui_object.show_lightning_dialog).setEnabled(bool(self.wallet.has_lightning() and self.network))
@@ -776,9 +776,9 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
             self.show_error(_('No donation address for this server'))
 
     def show_about(self):
-        QMessageBox.about(self, "Electrum-RADC",
+        QMessageBox.about(self, "Electrum-DOGE",
                           (_("Version")+" %s" % ELECTRUM_VERSION + "\n\n" +
-                           _("Electrum-RADC's focus is speed, with low resource usage and simplifying Radiocoin.") + " " +
+                           _("Electrum-DOGE's focus is speed, with low resource usage and simplifying Radiocoin.") + " " +
                            _("You do not need to perform regular backups, because your wallet can be "
                               "recovered from a secret phrase that you can memorize or write on paper.") + " " +
                            _("Startup times are instant because it operates in conjunction with high-performance "
@@ -794,10 +794,10 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         msg = ' '.join([
             _("Please report any bugs as issues on github:<br/>"),
             f'''<a href="{constants.GIT_REPO_ISSUES_URL}">{constants.GIT_REPO_ISSUES_URL}</a><br/><br/>''',
-            _("Before reporting a bug, upgrade to the most recent version of Electrum-RADC (latest release or git HEAD), and include the version number in your report."),
+            _("Before reporting a bug, upgrade to the most recent version of Electrum-DOGE (latest release or git HEAD), and include the version number in your report."),
             _("Try to explain not only what the bug is, but how it occurs.")
          ])
-        self.show_message(msg, title="Electrum-RADC - " + _("Reporting Bugs"), rich_text=True)
+        self.show_message(msg, title="Electrum-DOGE - " + _("Reporting Bugs"), rich_text=True)
 
     def notify_transactions(self):
         if self.tx_notification_queue.qsize() == 0:
@@ -837,9 +837,9 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         if self.tray:
             try:
                 # this requires Qt 5.9
-                self.tray.showMessage("Electrum-RADC", message, read_QIcon("electrum_dark_icon"), 20000)
+                self.tray.showMessage("Electrum-DOGE", message, read_QIcon("electrum_dark_icon"), 20000)
             except TypeError:
-                self.tray.showMessage("Electrum-RADC", message, QSystemTrayIcon.Information, 20000)
+                self.tray.showMessage("Electrum-DOGE", message, QSystemTrayIcon.Information, 20000)
 
 
 
@@ -1103,7 +1103,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
             _('Expiration date of your request.'),
             _('This information is seen by the recipient if you send them a signed payment request.'),
             _('Expired requests have to be deleted manually from your list, in order to free the corresponding Radiocoin addresses.'),
-            _('The Radiocoin address never expires and will always be part of this electrum-RADC wallet.'),
+            _('The Radiocoin address never expires and will always be part of this electrum-DOGE wallet.'),
         ])
 #        grid.addWidget(HelpLabel(_('Expires after'), msg), 2, 0)
 #        grid.addWidget(self.expires_combo, 2, 1)
@@ -2295,7 +2295,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         self.close()
 
     def enable_lightning(self):
-        warning1 = _("Lightning support in Electrum-RADC is experimental. Do not put large amounts in lightning channels.")
+        warning1 = _("Lightning support in Electrum-DOGE is experimental. Do not put large amounts in lightning channels.")
         warning2 = _("Funds stored in lightning channels are not recoverable from your seed. You must backup your wallet file everytime you create a new channel.")
         r = self.question(_('Enable Lightning payments?') + '\n\n' + _('WARNINGS') + ': ' + '\n\n' + warning1 + '\n\n' + warning2)
         if not r:
@@ -2465,7 +2465,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
                 "private key, and verifying with the corresponding public key. The "
                 "address you have entered does not have a unique public key, so these "
                 "operations cannot be performed.") + '\n\n' + \
-               _('The operation is undefined. Not just in Electrum-RADC, but in general.')
+               _('The operation is undefined. Not just in Electrum-DOGE, but in general.')
 
     @protected
     def do_sign(self, address, message, signature, password):
@@ -2633,7 +2633,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         try:
             return tx_from_any(data)
         except BaseException as e:
-            self.show_critical(_("Electrum-RADC was unable to parse your transaction") + ":\n" + repr(e))
+            self.show_critical(_("Electrum-DOGE was unable to parse your transaction") + ":\n" + repr(e))
             return
 
     def import_channel_backup(self, encrypted: str):
@@ -2676,7 +2676,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
             with open(fileName, "rb") as f:
                 file_content = f.read()  # type: Union[str, bytes]
         except (ValueError, IOError, os.error) as reason:
-            self.show_critical(_("Electrum-RADC was unable to open your transaction file") + "\n" + str(reason),
+            self.show_critical(_("Electrum-DOGE was unable to open your transaction file") + "\n" + str(reason),
                                title=_("Unable to read file or no transaction found"))
             return
         return self.tx_from_text(file_content)
@@ -2801,7 +2801,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
             self.do_export_privkeys(filename, private_keys, csv_button.isChecked())
         except (IOError, os.error) as reason:
             txt = "\n".join([
-                _("Electrum-RADC was unable to produce a private key-export."),
+                _("Electrum-DOGE was unable to produce a private key-export."),
                 str(reason)
             ])
             self.show_critical(txt, title=_("Unable to create csv"))
@@ -2976,7 +2976,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
             self.fx.trigger_update()
         run_hook('close_settings_dialog')
         if d.need_restart:
-            self.show_warning(_('Please restart Electrum-RADC to activate the new GUI settings'), title=_('Success'))
+            self.show_warning(_('Please restart Electrum-DOGE to activate the new GUI settings'), title=_('Success'))
 
     def closeEvent(self, event):
         # It seems in some rare cases this closeEvent() is called twice
@@ -3002,7 +3002,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         self.gui_object.close_window(self)
 
     def plugins_dialog(self):
-        self.pluginsdialog = d = WindowModalDialog(self, _('Electrum-RADC Plugins'))
+        self.pluginsdialog = d = WindowModalDialog(self, _('Electrum-DOGE Plugins'))
 
         plugins = self.gui_object.plugins
 
@@ -3239,7 +3239,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         self.showing_cert_mismatch_error = True
         self.show_critical(title=_("Certificate mismatch"),
                            msg=_("The SSL certificate provided by the main server did not match the fingerprint passed in with the --serverfingerprint option.") + "\n\n" +
-                               _("Electrum-RADC will now exit."))
+                               _("Electrum-DOGE will now exit."))
         self.showing_cert_mismatch_error = False
         self.close()
 
@@ -3420,9 +3420,9 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         elif name_pending_unverified:
             self.buy_names_already_exists_widget.hide()
             if name_mine_unverified:
-                self.buy_names_available_label.setText(_("The server reports that you already registered ") + identifier_formatted + _(" in approximately the past 2 hours, but Electrum-RADC couldn't verify this.  If you believe the server is wrong, you can try to register it, but you may forfeit the name registration fee."))
+                self.buy_names_available_label.setText(_("The server reports that you already registered ") + identifier_formatted + _(" in approximately the past 2 hours, but Electrum-DOGE couldn't verify this.  If you believe the server is wrong, you can try to register it, but you may forfeit the name registration fee."))
             else:
-                self.buy_names_available_label.setText(_("The server reports that someone else already registered ") + identifier_formatted + _(" in approximately the past 2 hours, but Electrum-RADC couldn't verify this.  If you believe the server is wrong, you can try to register it, but you may forfeit the name registration fee."))
+                self.buy_names_available_label.setText(_("The server reports that someone else already registered ") + identifier_formatted + _(" in approximately the past 2 hours, but Electrum-DOGE couldn't verify this.  If you believe the server is wrong, you can try to register it, but you may forfeit the name registration fee."))
             self.buy_names_available_widget.show()
         else:
             self.buy_names_already_exists_widget.hide()

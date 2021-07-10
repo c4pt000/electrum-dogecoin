@@ -420,13 +420,13 @@ def address_to_script(addr: str, *, net=None) -> str:
     if net is None: net = constants.net
     if not is_address(addr, net=net):
         raise BitcoinException(f"invalid radiocoin address: {addr}")
-    witver, witprog = segwit_addr.decode(net.SEGWIT_HRP, addr)
-    if witprog is not None:
-        if not (0 <= witver <= 16):
-            raise BitcoinException(f'impossible witness version: {witver}')
-        script = bh2u(add_number_to_script(witver))
-        script += push_script(bh2u(bytes(witprog)))
-        return script
+#    witver, witprog = segwit_addr.decode(net.SEGWIT_HRP, addr)
+#    if witprog is not None:
+#        if not (0 <= witver <= 16):
+#            raise BitcoinException(f'impossible witness version: {witver}')
+#        script = bh2u(add_number_to_script(witver))
+#        script += push_script(bh2u(bytes(witprog)))
+#        return script
     addrtype, hash_160_ = b58_address_to_hash160(addr)
     if addrtype == net.ADDRTYPE_P2PKH:
         script = pubkeyhash_to_p2pkh_script(bh2u(hash_160_))
