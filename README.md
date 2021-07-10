@@ -1,5 +1,27 @@
 # electrum-dogecoin-4.0.1 (experimental untested, no one sent me any dogecoin to test this client)
 
+for the older dogecoin 2.2.1 original client 
+https://raw.githubusercontent.com/c4pt000/electrum-wallet-doge
+
+![s1](https://raw.githubusercontent.com/c4pt000/electrum-dogecoin/main/electrum-receive.png)
+![s1](https://raw.githubusercontent.com/c4pt000/electrum-dogecoin/main/electrum-receive.png)
+
+protocol must be set 1.4 (instead of 0.9 or less than 1.4)
+
+edit servers in wallet for new nodes or server creation 
+
+# 4.0.1 electrum-dogecoin servers.json
+https://raw.githubusercontent.com/c4pt000/electrum-dogecoin/main/electrum_nmc/electrum/servers.json
+
+electrum_nmc/electrum/servers.json
+
+2.2.1 electrum-wallet-doge lib/network.py
+https://raw.githubusercontent.com/c4pt000/electrum-wallet-doge/master/lib/network.py
+
+lib/network.py
+
+
+
 * based off of electrum-nmc
 
 for server https://github.com/c4pt000/electrumx-dogecoin-server-radiocoin-4.1.4
