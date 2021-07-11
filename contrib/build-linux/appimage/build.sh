@@ -147,7 +147,7 @@ cp "/usr/lib/x86_64-linux-gnu/libzbar.so.0" "$APPDIR/usr/lib/libzbar.so.0"
 
 
 info "desktop integration."
-cp "$PROJECT_ROOT/electrum-doge.desktop" "$APPDIR/electrum-doge.desktop"
+cp "$PROJECT_ROOT/electrum-nmc.desktop" "$APPDIR/electrum-nmc.desktop"
 cp "$PROJECT_ROOT/electrum_nmc/electrum/gui/icons/electrum_nmc.png" "$APPDIR/electrum_nmc.png"
 
 

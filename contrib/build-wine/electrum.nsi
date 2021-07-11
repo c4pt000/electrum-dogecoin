@@ -6,9 +6,9 @@
 ;--------------------------------
 ;Variables
 
-  !define PRODUCT_NAME "Electrum-DOGE"
-  !define PRODUCT_WEB_SITE "https://www.namecoin.org/"
-  !define PRODUCT_PUBLISHER "Namecoin Project"
+  !define PRODUCT_NAME "ElectrumX-dogecoin"
+  !define PRODUCT_WEB_SITE "https://github.com/c4pt000/electrum-dogecoin"
+  !define PRODUCT_PUBLISHER "Dogecoin"
   !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
 
 ;--------------------------------
@@ -16,7 +16,7 @@
 
   ;Name and file
   Name "${PRODUCT_NAME}"
-  OutFile "dist/electrum-nmc-setup.exe"
+  OutFile "dist/ElectrumX-Dogecoin-setup.exe"
 
   ;Default installation folder
   InstallDir "$PROGRAMFILES\${PRODUCT_NAME}"
@@ -122,21 +122,21 @@ Section
 
   ;Create desktop shortcut
   DetailPrint "Creating desktop shortcut..."
-  CreateShortCut "$DESKTOP\${PRODUCT_NAME}.lnk" "$INSTDIR\electrum-nmc-${PRODUCT_VERSION}.exe" ""
+  CreateShortCut "$DESKTOP\${PRODUCT_NAME}.lnk" "$INSTDIR\${PRODUCT_VERSION}.exe" ""
 
   ;Create start-menu items
   DetailPrint "Creating start-menu items..."
   CreateDirectory "$SMPROGRAMS\${PRODUCT_NAME}"
   CreateShortCut "$SMPROGRAMS\${PRODUCT_NAME}\Uninstall.lnk" "$INSTDIR\Uninstall.exe" "" "$INSTDIR\Uninstall.exe" 0
-  CreateShortCut "$SMPROGRAMS\${PRODUCT_NAME}\${PRODUCT_NAME}.lnk" "$INSTDIR\electrum-nmc-${PRODUCT_VERSION}.exe" "" "$INSTDIR\electrum-nmc-${PRODUCT_VERSION}.exe" 0
-  CreateShortCut "$SMPROGRAMS\${PRODUCT_NAME}\${PRODUCT_NAME} Testnet.lnk" "$INSTDIR\electrum-nmc-${PRODUCT_VERSION}.exe" "--testnet" "$INSTDIR\electrum-nmc-${PRODUCT_VERSION}.exe" 0
+  CreateShortCut "$SMPROGRAMS\${PRODUCT_NAME}\${PRODUCT_NAME}.lnk" "$INSTDIR\${PRODUCT_VERSION}.exe" "" "$INSTDIR\${PRODUCT_VERSION}.exe" 0
+  CreateShortCut "$SMPROGRAMS\${PRODUCT_NAME}\${PRODUCT_NAME} Testnet.lnk" "$INSTDIR\${PRODUCT_VERSION}.exe" "--testnet" "$INSTDIR\${PRODUCT_VERSION}.exe" 0
 
 
   ;Links bitcoin: URI's to Electrum
-  WriteRegStr HKCU "Software\Classes\namecoin" "" "URL:namecoin Protocol"
-  WriteRegStr HKCU "Software\Classes\namecoin" "URL Protocol" ""
-  WriteRegStr HKCU "Software\Classes\namecoin" "DefaultIcon" "$\"$INSTDIR\electrum_nmc.ico, 0$\""
-  WriteRegStr HKCU "Software\Classes\namecoin\shell\open\command" "" "$\"$INSTDIR\electrum-nmc-${PRODUCT_VERSION}.exe$\" $\"%1$\""
+  WriteRegStr HKCU "Software\Classes\dogecoin" "" "URL:dogecoin Protocol"
+  WriteRegStr HKCU "Software\Classes\dogecoin" "URL Protocol" ""
+  WriteRegStr HKCU "Software\Classes\dogecoin" "DefaultIcon" "$\"$INSTDIR\electrum_nmc.ico, 0$\""
+  WriteRegStr HKCU "Software\Classes\dogecoin\shell\open\command" "" "$\"$INSTDIR\${PRODUCT_VERSION}.exe$\" $\"%1$\""
 
   ;Adds an uninstaller possibility to Windows Uninstall or change a program section
   WriteRegStr HKCU "${PRODUCT_UNINST_KEY}" "DisplayName" "$(^Name)"
@@ -167,7 +167,7 @@ Section "Uninstall"
   Delete "$SMPROGRAMS\${PRODUCT_NAME}\*.*"
   RMDir  "$SMPROGRAMS\${PRODUCT_NAME}"
   
-  DeleteRegKey HKCU "Software\Classes\namecoin"
+  DeleteRegKey HKCU "Software\Classes\dogecoin"
   DeleteRegKey HKCU "Software\${PRODUCT_NAME}"
   DeleteRegKey HKCU "${PRODUCT_UNINST_KEY}"
 SectionEnd

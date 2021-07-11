@@ -4,7 +4,7 @@ from PyInstaller.utils.hooks import collect_data_files, collect_submodules, coll
 
 import sys, os
 
-PACKAGE='Electrum-DOGE'
+PACKAGE='Electrum-NMC'
 PYPKG='electrum_nmc'
 MAIN_SCRIPT='run_electrum_nmc'
 ICONS_FILE=PYPKG + '/electrum/gui/icons/electrum_nmc.icns'

@@ -29,11 +29,13 @@ else
     "$CONTRIB"/make_libsecp256k1.sh || fail "Could not build libsecp"
 fi
 
-if [ -f "$PROJECT_ROOT/electrum/libzbar-0.dll" ]; then
-    info "libzbar already built, skipping"
-else
-    "$CONTRIB"/make_zbar.sh || fail "Could not build zbar"
-fi
+#if [ -f "$PROJECT_ROOT/electrum/libzbar-0.dll" ]; then
+#    info "libzbar already built, skipping"
+#    "$CONTRIB"/make_zbar.sh
+
+#else
+#    "$CONTRIB"/make_zbar.sh || fail "Could not build zbar"
+#fi
 
 $here/prepare-wine.sh || fail "prepare-wine failed"
 

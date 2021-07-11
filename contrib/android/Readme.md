@@ -1,6 +1,6 @@
 # Kivy GUI
 
-The Kivy GUI is used with Electrum-DOGE on Android devices.
+The Kivy GUI is used with Electrum-NMC on Android devices.
 To generate an APK file, follow these instructions.
 
 ## Android binary with Docker
