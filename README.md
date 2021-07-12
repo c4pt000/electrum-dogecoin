@@ -1,7 +1,6 @@
 # electrum-dogecoin-4.0.1 (experimental untested, no one sent me any dogecoin to test this client) 
 
-works with offical dogecoin-core wallet
-
+# seems like its working
 
 for the older dogecoin 2.2.1 original client 
 https://github.com/c4pt000/electrum-wallet-doge
