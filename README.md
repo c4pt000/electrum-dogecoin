@@ -1,6 +1,14 @@
-# electrum-dogecoin-4.0.1 (experimental untested, no one sent me any dogecoin to test this client) 
+# electrum-dogecoin-4.0.1 
 
 # seems like its working
+
+
+todo:
+balance bug in "history" addresses tab shows accurate balance
+export privkey from wallet to transfer funds out of wallet in case of a send tx or balance bug in "history" tab, (doesnt effect "addresses" tab)
+
+![s1](https://raw.githubusercontent.com/c4pt000/electrum-radiocoin/main/balance-bug-check-addresses-tab.png)
+
 
 for the older dogecoin 2.2.1 original client 
 https://github.com/c4pt000/electrum-wallet-doge
