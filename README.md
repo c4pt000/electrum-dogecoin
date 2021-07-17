@@ -7,9 +7,12 @@ todo:
 balance bug in "history" addresses tab shows accurate balance
 export privkey from wallet to transfer funds out of wallet in case of a send tx balance error
 <br>
+<br>
 addresses tab reports current correct balance of wallet
 <br>
+<br>
 balance bug in "history" tab, (doesnt effect "addresses" tab)
+<br>
 
 ![s1](https://raw.githubusercontent.com/c4pt000/electrum-radiocoin/main/balance-bug-check-addresses-tab.png)
 
