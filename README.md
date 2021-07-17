@@ -5,7 +5,9 @@
 
 todo:
 balance bug in "history" addresses tab shows accurate balance
-export privkey from wallet to transfer funds out of wallet in case of a send tx or 
+export privkey from wallet to transfer funds out of wallet in case of a send tx balance error
+<br>
+addresses tab reports current correct balance of wallet
 <br>
 balance bug in "history" tab, (doesnt effect "addresses" tab)
 
