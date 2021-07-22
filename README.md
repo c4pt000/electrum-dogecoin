@@ -1,4 +1,4 @@
-# electrum-dogecoin-4.0.1 
+# electrum-dogecoin-4.0.1 (use at your own risk , floating decimal issues)
 ```
 todo "fix zbar for QR code import", 
 ```
