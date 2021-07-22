@@ -3,7 +3,7 @@
 requires docker
 
 ```
-docker run --net host -it -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix c4pt/electrum-doge-2.2.1
+docker run --net host -it -d -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix c4pt/electrum-doge-2.2.1
 ```
 
 
