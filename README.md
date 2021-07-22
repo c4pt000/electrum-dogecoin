@@ -14,7 +14,7 @@ install natively fedora 34
 
 # requires docker, X11-xhost
 ```
-docker run -d -it --net host -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix c4pt/electrum-dogecoin-wallet
+docker run -it --net host -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix c4pt/electrum-dogecoin-wallet
 ```
 
 
