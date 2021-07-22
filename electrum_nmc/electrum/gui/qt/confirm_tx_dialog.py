@@ -168,7 +168,7 @@ class ConfirmTxDialog(TxEditor, WindowModalDialog):
         grid.addWidget(self.pw, 8+1, 1, 1, -1)
         self.preview_button = QPushButton(_('Advanced'))
         self.preview_button.clicked.connect(self.on_preview)
-        grid.addWidget(self.preview_button, 0, 2)
+#        grid.addWidget(self.preview_button, 0, 2)
         self.send_button = QPushButton(_('Send'))
         self.send_button.clicked.connect(self.on_send)
         self.send_button.setDefault(True)

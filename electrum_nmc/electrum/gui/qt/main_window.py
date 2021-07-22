@@ -1632,10 +1632,10 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         if output_values.count('!') > 1:
             self.show_error(_("More than one output set to spend max"))
             return
-        if self.config.get('advanced_preview'):
-            self.preview_tx_dialog(make_tx=make_tx,
-                                   external_keypairs=external_keypairs)
-            return
+#        if self.config.get('advanced_preview'):
+ #           self.preview_tx_dialog(make_tx=make_tx,
+  #                                 external_keypairs=external_keypairs)
+   #         return
 
         output_value = '!' if '!' in output_values else sum(output_values)
         d = ConfirmTxDialog(window=self, make_tx=make_tx, output_value=output_value, is_sweep=is_sweep)
