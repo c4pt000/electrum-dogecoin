@@ -2,6 +2,9 @@
 
 # seems like its working
 
+```
+./install-deps.sh for Fedora 34
+```
 
 todo:
 balance bug in "history" addresses tab shows accurate balance
