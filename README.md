@@ -1,5 +1,11 @@
 # electrum-dogecoin-4.0.1 
 
+hardcoded 1.00 DOGE fee into electrum-dogecoin
+
+so people dont accidentally try to send a transaction with less than 1.00 DOGE (so the transaction being sent doesnt get stuck or lost in the dogecoin network)
+
+
+
 ./run_electrum_doge (needs root to connect to network connections)
 
 * (not sure why)
