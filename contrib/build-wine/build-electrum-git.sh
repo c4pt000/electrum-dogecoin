@@ -1,124 +1,69 @@
 #!/bin/bash
 
-NAME_ROOT=electrum-nmc
+# You probably need to update only this link
+ELECTRUM_GIT_URL=git://github.com/spesmilo/electrum.git
+BRANCH=master
+NAME_ROOT=electrum
 
 # These settings probably don't need any change
-export WINEPREFIX=/opt/wine64
-export WINEDEBUG=-all
-export PYTHONDONTWRITEBYTECODE=1
-
-PYHOME=c:/python3
+export WINEPREFIX=/opt/wine-electrum
+PYHOME=c:/python26
 PYTHON="wine $PYHOME/python.exe -OO -B"
 
-
 # Let's begin!
+cd `dirname $0`
 set -e
 
-here="$(dirname "$(readlink -e "$0")")"
+cd tmp
 
-. "$CONTRIB"/build_tools_util.sh
+if [ -d "electrum-git" ]; then
+    # GIT repository found, update it
+    echo "Pull"
 
-pushd $WINEPREFIX/drive_c/electrum-nmc
+    cd electrum-git
+    git pull
+    cd ..
 
-VERSION=`git describe --tags --dirty --always`
-info "Last commit: $VERSION"
+else
+    # GIT repository not found, clone it
+    echo "Clone"
 
-# Load electrum-locale for this release
-#git submodule update --init
-
-pushd ./contrib/deterministic-build/electrum-locale
-if ! which msgfmt > /dev/null 2>&1; then
-    fail "Please install gettext"
+    git clone -b $BRANCH $ELECTRUM_GIT_URL electrum-git
 fi
-for i in ./locale/*; do
-    dir=$WINEPREFIX/drive_c/electrum-nmc/electrum_nmc/electrum/$i/LC_MESSAGES
-    mkdir -p $dir
-    msgfmt --output-file=$dir/electrum.mo $i/electrum.po || true
-done
-popd
 
-info "Compiling Namecoin-Qt forms..."
-./contrib/make_qt_forms
-
-info "Copying www root..."
-rm -rf electrum_nmc/electrum/www
-cp -a electrum/www electrum_nmc/electrum/www
-
-find -exec touch -d '2000-11-11T11:11:11+00:00' {} +
-popd
+cd electrum-git
+COMMIT_HASH=`git rev-parse HEAD | awk '{ print substr($1, 0, 11) }'`
+echo "Last commit: $COMMIT_HASH"
+cd ..
 
 
-# Install frozen dependencies
-$PYTHON -m pip install --no-dependencies --no-warn-script-location -r "$CONTRIB"/deterministic-build/requirements.txt
+rm -rf $WINEPREFIX/drive_c/electrum
+cp -r electrum-git $WINEPREFIX/drive_c/electrum
+cp electrum-git/LICENCE .
 
-$PYTHON -m pip install --no-dependencies --no-warn-script-location -r "$CONTRIB"/deterministic-build/requirements-hw.txt
+# Build Qt resources
+wine $WINEPREFIX/drive_c/Python26/Lib/site-packages/PyQt4/pyrcc4.exe C:/electrum/icons.qrc -o C:/electrum/lib/icons_rc.py
 
-pushd $WINEPREFIX/drive_c/electrum-nmc
-# see https://github.com/pypa/pip/issues/2195 -- pip makes a copy of the entire directory
-info "Pip installing Electrum-NMC. This might take a long time if the project folder is large."
-$PYTHON -m pip install --no-dependencies --no-warn-script-location .
-popd
+# Copy ZBar libraries to electrum
+#cp "$WINEPREFIX/drive_c/Program Files (x86)/ZBar/bin/"*.dll "$WINEPREFIX/drive_c/electrum/"
 
+cd ..
 
 rm -rf dist/
 
-# build standalone and portable versions
-info "Running pyinstaller..."
-wine "$PYHOME/scripts/pyinstaller.exe" --noconfirm --ascii --clean --name $NAME_ROOT-$VERSION -w deterministic.spec
+# For building standalone compressed EXE, run:
+$PYTHON "C:/pyinstaller/pyinstaller.py" --noconfirm --ascii -w --onefile "C:/electrum/electrum"
 
-# set timestamps in dist, in order to make the installer reproducible
-pushd dist
-find -exec touch -d '2000-11-11T11:11:11+00:00' {} +
-popd
+# For building uncompressed directory of dependencies, run:
+$PYTHON "C:/pyinstaller/pyinstaller.py" --noconfirm --ascii -w deterministic.spec
 
-info "building NSIS installer"
-# $VERSION could be passed to the electrum.nsi script, but this would require some rewriting in the script itself.
-wine "$WINEPREFIX/drive_c/Program Files (x86)/NSIS/makensis.exe" /DPRODUCT_VERSION=$VERSION electrum.nsi
+# For building NSIS installer, run:
+wine "$WINEPREFIX/drive_c/Program Files (x86)/NSIS/makensis.exe" electrum.nsi
+#wine $WINEPREFIX/drive_c/Program\ Files\ \(x86\)/NSIS/makensis.exe electrum.nsis
 
+DATE=`date +"%Y%m%d"`
 cd dist
-mv electrum-nmc-setup.exe $NAME_ROOT-$VERSION-setup.exe
-cd ..
-
-info "Padding binaries to 8-byte boundaries, and fixing COFF image checksum in PE header"
-# note: 8-byte boundary padding is what osslsigncode uses:
-#       https://github.com/mtrojnar/osslsigncode/blob/6c8ec4427a0f27c145973450def818e35d4436f6/osslsigncode.c#L3047
-(
-    cd dist
-    for binary_file in ./*.exe; do
-        info ">> fixing $binary_file..."
-        # code based on https://github.com/erocarrera/pefile/blob/bbf28920a71248ed5c656c81e119779c131d9bd4/pefile.py#L5877
-        python3 <<EOF
-pe_file = "$binary_file"
-with open(pe_file, "rb") as f:
-    binary = bytearray(f.read())
-pe_offset = int.from_bytes(binary[0x3c:0x3c+4], byteorder="little")
-checksum_offset = pe_offset + 88
-checksum = 0
-
-# Pad data to 8-byte boundary.
-remainder = len(binary) % 8
-binary += bytes(8 - remainder)
-
-for i in range(len(binary) // 4):
-    if i == checksum_offset // 4:  # Skip the checksum field
-        continue
-    dword = int.from_bytes(binary[i*4:i*4+4], byteorder="little")
-    checksum = (checksum & 0xffffffff) + dword + (checksum >> 32)
-    if checksum > 2 ** 32:
-        checksum = (checksum & 0xffffffff) + (checksum >> 32)
-
-checksum = (checksum & 0xffff) + (checksum >> 16)
-checksum = (checksum) + (checksum >> 16)
-checksum = checksum & 0xffff
-checksum += len(binary)
-
-# Set the checksum
-binary[checksum_offset : checksum_offset + 4] = int.to_bytes(checksum, byteorder="little", length=4)
-
-with open(pe_file, "wb") as f:
-    f.write(binary)
-EOF
-    done
-)
-
-sha256sum dist/electrum-nmc*.exe
+mv electrum.exe $NAME_ROOT-$DATE-$COMMIT_HASH.exe
+mv electrum $NAME_ROOT-$DATE-$COMMIT_HASH
+mv electrum-setup.exe $NAME_ROOT-$DATE-$COMMIT_HASH-setup.exe
+zip -r $NAME_ROOT-$DATE-$COMMIT_HASH.zip $NAME_ROOT-$DATE-$COMMIT_HASH
