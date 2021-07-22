@@ -1,5 +1,17 @@
 # electrum-dogecoin-4.0.1 
 
+install natively
+```
+  yum install git nano python3-devel python3-pip libsecp256k1-devel.x86_64 libglvnd-glx xorg-x11-server-util xhost qt5-qtbase qt5-qtbase-gui gcc -y
+  git clone https://github.com/c4pt000/electrum-dogecoin
+  python3 -m pip install cryptography
+  python3 -m pip install PyQT5
+  python3 -m pip install .
+  python3 setup.py install
+  
+   ./run_electrum_doge 
+```
+
 # requires docker, X11-xhost
 ```
 docker run -d -it --net host -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix c4pt/electrum-dogecoin-wallet
