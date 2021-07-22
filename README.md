@@ -1,6 +1,6 @@
 # electrum-dogecoin-4.0.1 
 
-install natively
+install natively fedora 34
 ```
   yum install git nano python3-devel python3-pip libsecp256k1-devel.x86_64 libglvnd-glx xorg-x11-server-util xhost qt5-qtbase qt5-qtbase-gui gcc -y
   git clone https://github.com/c4pt000/electrum-dogecoin
