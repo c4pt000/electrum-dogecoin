@@ -1,9 +1,18 @@
 
 # (use at your own risk , floating decimal issues) for stability use dogecoin-qt)
 
-* there are floating decimal issues, mostly the address tab in the main window never lies but i can get stuck, right clicking to export an address balance to  import into a stable desktop-qt balance and checking the explorer can fix issues ( I was able to recover 1.3 Billion balance transaction send from a floating point error 
-* 
-same here as radiocoin-electrum 
+* there are floating decimal issues, mostly the address tab in the main window never lies but it can get stuck,
+* the history tab can be inaccurate, also sending maximum with the send window can be stuck,
+* but import private key balance works to resolve stuck transactions or floating errors,
+* right clicking to export an address balance to  import into a stable desktop-qt balance and checking the explorer can fix issues ( I was able to recover 1.3 Billion balance transaction send from a floating point error 
+* the video posted here is kind of confusing i guess for some, its meant as a panic resource to recover funds, 
+* same here as radiocoin-electrum 
+
+( a side note of sarcasm the code for electrum sat for years with developers all over the world, even elon musks boasts how great dogecoin can be with contracts the first step to finish a plate of dinner is to make the convenice of allowing the end user to sync a dogecoin wallet quickly instead of waiting constantly for dogecoin-qt to sync for a few hours or few days ) 
+
+* I dont have money to really test these wallets except for radiocoin 
+
+(I prefer to use actual crypto instead of test net funds, whats living on the edge anyway)
 
 ![s1](https://github.com/c4pt000/electrum-dogecoin/blob/main/floating.gif?raw=true)
 
