@@ -1,12 +1,4 @@
-# electrum-dogecoin-2.2.1
 
-requires docker and X11-xhost 
-
-
-as root
-```
-docker run --net host -it -d -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix c4pt/electrum-doge-2.2.1
-```
 
 for xhost install
 ```
