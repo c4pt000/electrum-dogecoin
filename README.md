@@ -1,7 +1,7 @@
 # electrum-dogecoin-4.0.1 
 ```
 todo "fix zbar for QR code import", 
-todo "fix blockexplorer lookup on sent or received in app"
+todo "fix blockexplorer open the browser to lookup TX on sent or received in app"
 ```
 hardcoded 1.00 DOGE fee into electrum-dogecoin
 
