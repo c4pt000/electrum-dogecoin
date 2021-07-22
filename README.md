@@ -1,5 +1,9 @@
 # electrum-dogecoin-4.0.1 
 
+./run_electrum_doge (needs root to connect to network connections)
+
+* (not sure why)
+
 install natively fedora 34
 ```
   yum install git nano python3-devel python3-pip libsecp256k1-devel.x86_64 zbar zbar-devel \
