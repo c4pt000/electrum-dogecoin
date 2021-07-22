@@ -2,7 +2,8 @@
 
 install natively fedora 34
 ```
-  yum install git nano python3-devel python3-pip libsecp256k1-devel.x86_64 libglvnd-glx xorg-x11-server-utils xhost qt5-qtbase qt5-qtbase-gui gcc -y
+  yum install git nano python3-devel python3-pip libsecp256k1-devel.x86_64 zbar \
+  libglvnd-glx xorg-x11-server-utils xhost qt5-qtbase qt5-qtbase-gui libXv gcc -y
   git clone https://github.com/c4pt000/electrum-dogecoin
   python3 -m pip install cryptography
   python3 -m pip install PyQT5
