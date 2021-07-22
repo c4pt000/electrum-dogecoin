@@ -1,5 +1,9 @@
 
-# (use at your own risk , floating decimal issues) for stability use dogecoin-qt
+# (use at your own risk , floating decimal issues) for stability use dogecoin-qt)
+
+* there are floating decimal issues, mostly the address tab in the main window never lies but i can get stuck, right clicking to export an address balance to  import into a stable desktop-qt balance and checking the explorer can fix issues ( I was able to recover 1.3 Billion balance transaction send from a floating point error 
+* 
+same here as radiocoin-electrum 
 
 ![s1](https://github.com/c4pt000/electrum-dogecoin/blob/main/floating.gif?raw=true)
 
