@@ -1,6 +1,8 @@
 
 # (use at your own risk , floating decimal issues) for stability use dogecoin-qt
 
+![s1](https://github.com/c4pt000/electrum-dogecoin/blob/main/floating.gif?raw=true)
+
 # electrum-dogecoin-4.0.1 
 ```
 todo "fix zbar for QR code import", 
