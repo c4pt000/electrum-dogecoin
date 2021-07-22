@@ -1,16 +1,24 @@
-include README LICENCE RELEASE-NOTES AUTHORS
-include electrum-doge.conf.sample
+include LICENCE RELEASE-NOTES AUTHORS
+include README.rst
 include electrum-doge.desktop
 include *.py
-include electrum-doge
-recursive-include lib *.py
-recursive-include gui *.py
-recursive-include plugins *.py
+include run_electrum_nmc
 recursive-include packages *.py
-include app.fil
-include icons.qrc
-recursive-include icons *
-recursive-include scripts *
-recursive-include data *
-recursive-include locale *.mo
-recursive-include docs *
+recursive-include packages cacert.pem
+
+include contrib/requirements/requirements*.txt
+include contrib/deterministic-build/requirements*.txt
+include contrib/make_libsecp256k1.sh
+include contrib/build_tools_util.sh
+
+graft electrum_nmc
+prune electrum_nmc/electrum/tests
+graft contrib/udev
+
+exclude electrum/*.so
+exclude electrum/*.so.0
+
+global-exclude __pycache__
+global-exclude *.py[co~]
+global-exclude *.py.orig
+global-exclude *.py.rej

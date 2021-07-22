@@ -1,0 +1,122 @@
+#!/usr/bin/env bash
+
+set -eu -o pipefail
+shopt -s nullglob globstar
+
+if ls "./electrum" | grep -v '^www$'; then
+    echo "Rebranding needed"
+    exit 1
+fi
+
+for i in **/*.py; do
+    if ./contrib/print_python_strings "$i" "btc" \
+        | grep -v "btchip" \
+        | grep -v 'electrum/tests/.*\.py.*C2YxWaiTpNPuxjSNhUlBtcJmcdkz3' \
+        | grep -v 'electrum/tests/.*\.py.*3KaBTcviBLEJajTEMstsA2GWjYoPzPK7Y7' \
+        | grep -v 'electrum/tests/.*\.py.*mEIVZ1sXNObTCGD8auW4H8hAtq2H' \
+        | grep -v 'BTC/BTC'; then
+        echo "Rebranding needed"
+        exit 1
+    fi
+
+    # 'b"Bitcoin seed"' is the BIP32 root preimage
+    # main_window.py contains 'bitcoin' in its console namespace
+    # Payment Protocol is a known possible bug: https://github.com/namecoin/electrum-nmc/issues/108
+    # Ledger rebranding is a known bug: https://github.com/namecoin/electrum-nmc/issues/105
+    # bitcoin.png should be rebranded via the file contents, not the path.
+    # bitcoin_key and bitcoin_sig are part of the Lightning protocol.
+    if ./contrib/print_python_strings "$i" "bitcoin" \
+        | grep -v "'b\"Bitcoin seed\"'" \
+        | grep -v "main_window.py.*\"'bitcoin'\"" \
+        | grep -v 'address_conversion\.py' \
+        | grep -v 'electrum/tests/.*\.py.*bitcoin:' \
+        | grep -v "org.bitcoin.protocols.payments" \
+        | grep -v "electrum_nmc/electrum/plugins/ledger/" \
+        | grep -v "bitcoin.png" \
+        | grep -v "bitcoin_key" \
+        | grep -v "bitcoin_sig"; then
+        echo "Rebranding needed"
+        exit 1
+    fi
+
+    if ./contrib/print_python_strings "$i" "sat" \
+        | grep -v "amount_msat" \
+        | grep -v "amount_sat" \
+        | grep -v "balance_msat" \
+        | grep -v "capacity_sat" \
+        | grep -v "channel_reserve_satoshis" \
+        | grep -v "dust_limit_sat" \
+        | grep -v "fee_msat" \
+        | grep -v "fee_sat" \
+        | grep -v "fee_base_msat" \
+        | grep -v "funding_sat" \
+        | grep -v "htlc_minimum_msat" \
+        | grep -v "htlc_maximum_msat" \
+        | grep -v "local_msat" \
+        | grep -v "max_htlc_value_in_flight_msat" \
+        | grep -v "MAXIMUM_HTLC_MINIMUM_MSAT_ACCEPTED" \
+        | grep -v "push_msat" \
+        | grep -v "remote_msat" \
+        | grep -v "total_msat" \
+        | grep -v "value_sats" \
+        | grep -v "satisfied" \
+        | grep -v "electrum/gui/text.py.*'satoshis'" \
+        | grep -v "electrum/old_mnemonic.py" \
+        | grep -v "electrum/util.py.*'Satoshis(%d)'" \
+        | grep -v "electrum/util.py.*'Satoshis({self.value})'" \
+        | grep -v "electrum/tests/.*\.py"; then
+        echo "Rebranding needed"
+        exit 1
+    fi
+
+    # coldcard plugin uses "b'1234 Electrum Plugin 4321'" as a ping echo blob
+    # keepkey plugin uses '"electrum pinging device"' as a ping echo blob
+    # safe_t plugin uses '"electrum pinging device"' as a ping echo blob
+    # trezor plugin uses '"electrum pinging device"' as a ping echo blob
+    # test_util unit tests use 'electrum test' as an address label, etc
+    # setup.py contains a copyright statement that references upstream
+    if ./contrib/print_python_strings "$i" "electrum " \
+        | grep -v "#:import" \
+        | grep -v "plugins/coldcard.*\"b'1234 Electrum Plugin 4321'\"" \
+        | grep -v "plugins/keepkey.*'\"electrum pinging device\"'" \
+        | grep -v "plugins/safe_t.*'\"electrum pinging device\"'" \
+        | grep -v "plugins/trezor.*'\"electrum pinging device\"'" \
+        | grep -v "tests/test_util.py.*'electrum test'" \
+        | grep -v "setup.py.*based on Electrum by Thomas Voegtlin"; then
+        echo "Rebranding needed"
+        exit 1
+    fi
+
+    # Bitcoin Bech32 addresses
+    if ./contrib/print_python_strings "$i" "['\"]bc1" \
+        | grep -v 'electrum/tests/.*\.py'; then
+        echo "Rebranding needed"
+        exit 1
+    fi
+
+    # Bitcoin private keys
+    if ./contrib/print_python_strings "$i" "p2w?pkh(-p2sh)?:[KL]" \
+        | grep -v 'electrum/tests/.*\.py'; then
+        echo "Rebranding needed"
+        exit 1
+    fi
+done
+
+EXCEPTIONS="--exclude=check_nmc_rebranding --exclude=RELEASE-NOTES --exclude-dir=.git"
+
+if grep -r $EXCEPTIONS "electrum.icns" ./; then
+    echo "Rebranding needed"
+    exit 1
+fi
+
+if grep -r $EXCEPTIONS "electrum\\.ico" ./; then
+    echo "Rebranding needed"
+    exit 1
+fi
+
+if grep -r $EXCEPTIONS "electrum.png" ./; then
+    echo "Rebranding needed"
+    exit 1
+fi
+
+exit 0

@@ -1,0 +1,15 @@
+#!/bin/bash
+
+set -e
+
+if ! which pyuic5 > /dev/null 2>&1; then
+    echo "Please install pyqt5-dev-tools"
+    exit 1
+fi
+
+for FORMXMLPATH in electrum_nmc/electrum/gui/qt/forms/*.ui; do
+    FORMPYPATH=$(echo $FORMXMLPATH | sed 's/\.ui$/.py/')
+    pyuic5 "$FORMXMLPATH" --execute --output="$FORMPYPATH"
+    sed -i s/qpaytoedit/.qpaytoedit/ "$FORMPYPATH"
+    sed -i s/qvalidatedlineedit/.qvalidatedlineedit/ "$FORMPYPATH"
+done

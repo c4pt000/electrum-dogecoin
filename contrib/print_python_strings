@@ -1,0 +1,5 @@
+#!/bin/bash
+
+set -euf -o pipefail
+
+python3 -m tokenize $1 | grep "STRING" | grep -v '"""' | grep -v "'''" | grep -E -i "$2" | awk "{print \"$1: \" \$0}"
