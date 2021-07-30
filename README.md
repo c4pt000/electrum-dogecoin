@@ -1,4 +1,6 @@
 
+* 07-30-2021 (requires yum install google*fonts or apt install google*fonts for font formatting in console and cleaner look and feel)
+decimal floating errors possibly fixed (I have no dogecoin at the moment to test this)
 
 
 # use at your risk floating decimal issues, (for stability use dogecoin-qt)
