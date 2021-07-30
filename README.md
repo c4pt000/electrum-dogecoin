@@ -1,6 +1,10 @@
 
 # * 07-30-2021 (requires for font formatting in console , cleaner look and feel)
-```yum install google*fonts or apt install google*fonts``` 
+```
+yum install google*fonts 
+or 
+apt install google*fonts
+``` 
 <br>
 # decimal floating errors possibly fixed (I have no dogecoin at the moment to test this)
 
