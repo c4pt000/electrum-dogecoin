@@ -34,7 +34,6 @@ RUN apt-get update -q && \
     apt-get autoremove -y && \
     apt-get clean
 
-# pyqt5-dev-tools is for compiling Namecoin-Qt forms
 RUN wget -nc https://dl.winehq.org/wine-builds/Release.key && \
         echo "c51bcb8cc4a12abfbd7c7660eaf90f49674d15e222c262f27e6c96429111b822 Release.key" | sha256sum -c - && \
         apt-key add Release.key && \
@@ -46,13 +45,10 @@ RUN wget -nc https://dl.winehq.org/wine-builds/Release.key && \
     apt-add-repository https://dl.winehq.org/wine-builds/ubuntu/ && \
     apt-get update -q && \
     apt-get install -qy \
-        wine-stable-amd64:amd64=5.0.3~focal \
-        wine-stable-i386:i386=5.0.3~focal \
-        wine-stable:amd64=5.0.3~focal \
-        winehq-stable:amd64=5.0.3~focal \
-        && \
-    apt-get install -qy \
-        pyqt5-dev-tools=5.14.1+dfsg-3build1 \
+        wine-stable-amd64:amd64=6.0.0~focal-1 \
+        wine-stable-i386:i386=6.0.0~focal-1 \
+        wine-stable:amd64=6.0.0~focal-1 \
+        winehq-stable:amd64=6.0.0~focal-1 \
         && \
     rm -rf /var/lib/apt/lists/* && \
     apt-get autoremove -y && \

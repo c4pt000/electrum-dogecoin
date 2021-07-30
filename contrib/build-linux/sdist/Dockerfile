@@ -15,12 +15,3 @@ RUN apt-get update -q && \
     rm -rf /var/lib/apt/lists/* && \
     apt-get autoremove -y && \
     apt-get clean
-
-# For compiling Namecoin-Qt forms
-RUN apt-get update -q && \
-    apt-get install -qy \
-        pyqt5-dev-tools \
-        && \
-    rm -rf /var/lib/apt/lists/* && \
-    apt-get autoremove -y && \
-    apt-get clean

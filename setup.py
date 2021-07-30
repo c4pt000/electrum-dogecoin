@@ -26,7 +26,7 @@ with open('contrib/requirements/requirements-hw.txt') as f:
     requirements_hw = f.read().splitlines()
 
 # load version.py; needlessly complicated alternative to "imp.load_source":
-version_spec = importlib.util.spec_from_file_location('version', 'electrum_nmc/electrum/version.py')
+version_spec = importlib.util.spec_from_file_location('version', 'electrum/version.py')
 version_module = version = importlib.util.module_from_spec(version_spec)
 version_spec.loader.exec_module(version_module)
 
@@ -47,7 +47,7 @@ if platform.system() in ['Linux', 'FreeBSD', 'DragonFly']:
             usr_share = os.path.expanduser('~/.local/share')
     data_files += [
         (os.path.join(usr_share, 'applications/'), ['electrum-doge.desktop']),
-        (os.path.join(usr_share, icons_dirname), ['electrum_nmc/electrum/gui/icons/electrum_nmc.png']),
+        (os.path.join(usr_share, icons_dirname), ['electrum/gui/icons/electrum_nmc.png']),
     ]
 
 extras_require = {
@@ -71,33 +71,32 @@ setup(
     install_requires=requirements,
     extras_require=extras_require,
     packages=[
-        'electrum_nmc',
-        'electrum_nmc.electrum',
-        'electrum_nmc.electrum.gui',
-        'electrum_nmc.electrum.gui.qt',
-        'electrum_nmc.electrum.gui.qt.forms',
-        'electrum_nmc.electrum.plugins',
-    ] + [('electrum_nmc.electrum.plugins.'+pkg) for pkg in find_packages('electrum_nmc/electrum/plugins')],
+        'electrum',
+        'electrum.gui',
+        'electrum.gui.qt',
+        'electrum.gui.qt.forms',
+        'electrum.plugins',
+    ] + [('electrum.plugins.'+pkg) for pkg in find_packages('electrum/plugins')],
     package_dir={
-        'electrum_nmc': 'electrum_nmc',
+        'electrum': 'electrum',
     },
     package_data={
         '': ['*.txt', '*.json', '*.ttf', '*.otf', '*.csv'],
-        'electrum_nmc.electrum': [
+        'electrum': [
             'wordlist/*.txt',
             'locale/*/LC_MESSAGES/electrum.mo',
             'lnwire/*.csv',
         ],
-        'electrum_nmc.electrum.gui': [
+        'electrum.gui': [
             'icons/*',
         ],
     },
-    scripts=['electrum_nmc/electrum/electrum-nmc'],
+    scripts=['electrum/electrum-doge'],
     data_files=data_files,
-    description="Lightweight Namecoin Wallet",
-    author="The Namecoin developers; based on Electrum by Thomas Voegtlin and Electrum-DOGE by The Electrum-DOGE contributors",
-    author_email="jeremy@namecoin.org",
+    description="Lightweight Dogecoin Wallet",
+    author="The Dogecoin developers; based on Electrum by Thomas Voegtlin and Electrum-DOGE by The Electrum-DOGE contributors",
+    author_email="jeremy@Dogecoin.org",
     license="GNU GPLv3+ for Electrum-DOGE components; MIT Licence for all other components",
-    url="https://www.namecoin.org/",
-    long_description="""Lightweight Namecoin Wallet""",
+    url="https://www.Dogecoin.org/",
+    long_description="""Lightweight Dogecoin Wallet""",
 )

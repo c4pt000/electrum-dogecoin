@@ -1,4 +1,0 @@
-#!/bin/bash
-version=`python3 -c "import electrum_nmc.electrum; print(electrum_nmc.electrum.version.ELECTRUM_VERSION)"`
-sig=`./run_electrum_nmc -w $SIGNING_WALLET signmessage $SIGNING_ADDRESS $version`
-echo "{ \"version\":\"$version\", \"signatures\":{ \"$SIGNING_ADDRESS\":\"$sig\"}}"

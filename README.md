@@ -1,5 +1,7 @@
 
-# (use at your own risk , floating decimal issues) for stability use dogecoin-qt)
+
+
+# use at your risk floating decimal issues, (for stability use dogecoin-qt)
 
 <h3>you've been warned continue at your own risk</h3>
 
@@ -8,115 +10,39 @@
 * but import private key balance works to resolve stuck transactions or floating errors,
 * right clicking to export an address balance to  import into a stable desktop-qt balance and checking the explorer can fix issues ( I was able to recover a 1.3 Billion balance transaction send from a floating point error 
 * the video posted here is kind of confusing i guess for some, its meant as a panic resource to recover funds, 
-* same here as radiocoin-electrum 
+* same here as dogecoin-electrum 
 
 ( a side note of sarcasm the code for electrum sat for years with developers all over the world, even elon musk boasts how great dogecoin can be with contracts the first step to finish a plate of dinner is to make the convenice of allowing the end user to sync a dogecoin wallet quickly instead of waiting constantly for dogecoin-qt to sync for a few hours or few days ) 
 
-* I dont have money to really test these wallets except for radiocoin 
+* I dont have money to really test these wallets except for dogecoin 
 
 (I prefer to use actual crypto instead of test net funds, whats living on the edge anyway)
 
 ![s1](https://github.com/c4pt000/electrum-dogecoin/blob/main/floating.gif?raw=true)
 
-# electrum-dogecoin-4.0.1 
-```
-todo "fix zbar for QR code import", 
-```
-hardcoded 1.00 DOGE fee into electrum-dogecoin
 
-so people dont accidentally try to send a transaction with less than 1.00 DOGE (so the transaction being sent doesnt get stuck or lost in the dogecoin network)
+# electrum-dogecoin-4.0.1 for electrum-dogecoin
 
-
-
-./run_electrum_doge (needs root to connect to network connections)
-
-* (not sure why)
-
-install natively fedora 34
-```
-  yum install git nano python3-devel python3-pip libsecp256k1-devel.x86_64 zbar zbar-devel \
-  libglvnd-glx xorg-x11-server-utils xhost qt5-qtbase qt5-qtbase-gui libXv gcc -y
-  git clone https://github.com/c4pt000/electrum-dogecoin
-  python3 -m pip install cryptography PyQt5 py-zbar
-  python3 -m pip install PyQT5
-  python3 -m pip install .
-  python3 setup.py install
-  
-   ./run_electrum_doge 
-```
-
-# requires docker, X11-xhost
-```
-docker run -it --net host -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix c4pt/electrum-dogecoin-wallet
-```
-
-
-```
-wget https://raw.githubusercontent.com/c4pt000/Docker-fedora-34-nested-docker-OpenCore-ARM64/main/xhost-gen
-chmod +x xhost-gen
-#check if your system supports xhost as root
-xhost
-#if not install xhost
-./xhost-gen
-#as root 
-echo "xhost SI:localuser:root" >> /root/.bashrc
-source /root/.bashrc
-
-```
-
-
-todo:
-balance bug in "history" addresses tab shows accurate balance
-export privkey from wallet to transfer funds out of wallet in case of a send tx balance error
-<br>
-<br>
-addresses tab reports current correct balance of wallet
-<br>
-<br>
-balance bug in "history" tab, (doesnt effect "addresses" tab)
-<br>
-
-![s1](https://raw.githubusercontent.com/c4pt000/electrum-radiocoin/main/balance-bug-check-addresses-tab.png)
-
-
-for the older dogecoin 2.2.1 original client 
-https://github.com/c4pt000/electrum-wallet-doge
-
-![s1](https://raw.githubusercontent.com/c4pt000/electrum-dogecoin/main/electrum-receive.png)
-![s1](https://raw.githubusercontent.com/c4pt000/electrum-dogecoin/main/electrum-receive.png)
-
-protocol must be set 1.4 (instead of 0.9 or less than 1.4)
-2.2.1 client https://raw.githubusercontent.com/c4pt000/electrum-wallet-doge/master/lib/version.py
-in 4.0.1 its part of servers.json and version.py
-
-edit servers in wallet for new nodes or server creation 
-
-# 4.0.1 electrum-dogecoin servers.json
-https://raw.githubusercontent.com/c4pt000/electrum-dogecoin/main/electrum_nmc/electrum/servers.json
-
-electrum_nmc/electrum/servers.json
-
-2.2.1 electrum-wallet-doge lib/network.py
-https://raw.githubusercontent.com/c4pt000/electrum-wallet-doge/master/lib/network.py
-
-lib/network.py
-
-
+https://github.com/c4pt000/electrum-dogecoin
 
 * based off of electrum-nmc
 
-for server https://github.com/c4pt000/electrumx-dogecoin-server-radiocoin-4.1.4
-<br>
-for radiocoin-electrum https://github.com/c4pt000/electrum-radiocoin
+
+# for server https://github.com/c4pt000/electrumx-dogecoin-server-dogecoin-4.1.4
+# for DOGECOIN https://github.com/c4pt000/electrum-dogecoin
+
+for dogecoin-electrum
+https://github.com/c4pt000/electrum-wallet-doge
 
 <br>
 <br>
+<br>
+<br>
+<br>
+win10 release
 
-https://raw.githubusercontent.com/c4pt000/electrum-dogecoin/main/fedora-install.sh
-<br>
-https://raw.githubusercontent.com/c4pt000/electrum-dogecoin/main/ubuntu-install.sh
-<br>
-https://github.com/c4pt000/electrum-dogecoin/releases/download/win10/electrum-dogecoin-4.0.1-setup.exe
+https://github.com/c4pt000/electrum-dogecoin/releases/tag/win10
+
 
 fedora 34
 <br>
@@ -130,35 +56,30 @@ cd /opt
  yum install git nano wget -y
  git clone https://github.com/c4pt000/electrum-dogecoin
  cd electrum-dogecoin
- sh fedora-install.sh
+ sh install-dogecoin-electrum.sh 
 ```
 
-
-
-
-# original notes radiocoin-electrum "errata" 
-
- * todo hardcode  a minimum of 1.00 RADC fee to send (with electrum)
+ * todo hardcode  a minimum of 1.00 DOGE fee to send (with electrum)
 
 # dont use with docker
 * wont send a transaction while running from the docker guest (even with --net host)
 
 * 07-06-2021
-# PAPER wallet import works with radiocoin-electrum-4.1.4
-![s1](https://raw.githubusercontent.com/c4pt000/radiocoin/master/just-the-right-QR-code-ignore-the-left.png)
+# PAPER wallet import works with dogecoin-electrum-4.1.4
+![s1](https://raw.githubusercontent.com/c4pt000/dogecoin/master/just-the-right-QR-code-ignore-the-left.png)
 # leave random deposit address and just import the QR on the right side of the crypto-currency bill (with the camera logo icon) 
 * requires "pip3 install python-zbar" ? and uvcvideo and web cam support
 * set default camera in "General" Preferences
-![s1](https://raw.githubusercontent.com/c4pt000/radiocoin/master/electrum-import-paper-QR-radiodollar.png)
-![s1](https://raw.githubusercontent.com/c4pt000/radiocoin/master/radio-electrum-4.1.4.paper-sweep.png)
+![s1](https://raw.githubusercontent.com/c4pt000/dogecoin/master/electrum-import-paper-QR-radiodollar.png)
+![s1](https://raw.githubusercontent.com/c4pt000/dogecoin/master/radio-electrum-4.1.4.paper-sweep.png)
 
 # working
 SAVE YOUR WALLET SEED TO RESTORE A BACKUP OF YOUR WALLET
 (WITHOUT COMMITTING A DOCKER IMAGE TO A NEW WRITTEN IMAGE YOU WILL, LOSE ALL YOUR DATA WITHIN A DOCKER IMAGE!)
 
-![s1](https://github.com/c4pt000/radiocoin/releases/download/electrum-wallet/electrum--radiocoin-sign-broadcast.png)
-![s1](https://github.com/c4pt000/radiocoin/releases/download/electrum-wallet/electrum-4.1.4-radiocoin-send-amount.png)
-![s1](https://github.com/c4pt000/radiocoin/releases/download/electrum-wallet/electrum-finalize-transaction.png)
+![s1](https://github.com/c4pt000/dogecoin/releases/download/electrum-wallet/electrum--dogecoin-sign-broadcast.png)
+![s1](https://github.com/c4pt000/dogecoin/releases/download/electrum-wallet/electrum-4.1.4-dogecoin-send-amount.png)
+![s1](https://github.com/c4pt000/dogecoin/releases/download/electrum-wallet/electrum-finalize-transaction.png)
 ```
 wget https://raw.githubusercontent.com/c4pt000/Docker-fedora-34-nested-docker-OpenCore-ARM64/main/xhost-gen
 chmod +x xhost-gen

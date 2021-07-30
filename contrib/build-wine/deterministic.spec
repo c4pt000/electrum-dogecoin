@@ -10,9 +10,7 @@ for i, x in enumerate(sys.argv):
 else:
     raise Exception('no name')
 
-PYHOME = 'c:/python3'
-
-home = 'C:\\electrum-nmc\\'
+home = 'C:\\electrum\\'
 
 # see https://github.com/pyinstaller/pyinstaller/issues/2005
 hiddenimports = []
@@ -37,12 +35,13 @@ binaries += [('C:/tmp/libusb-1.0.dll', '.')]
 binaries += [('C:/tmp/libzbar-0.dll', '.')]
 
 datas = [
-    (home+'electrum_nmc/electrum/*.json', 'electrum'),
-    (home+'electrum_nmc/electrum/lnwire/*.csv', 'electrum/lnwire'),
-    (home+'electrum_nmc/electrum/wordlist/english.txt', 'electrum/wordlist'),
-    (home+'electrum_nmc/electrum/locale', 'electrum/locale'),
-    (home+'electrum_nmc/electrum/plugins', 'electrum/plugins'),
-    (home+'electrum_nmc/electrum/gui/icons', 'electrum/gui/icons'),
+    (home+'electrum/*.json', 'electrum'),
+    (home+'electrum/lnwire/*.csv', 'electrum/lnwire'),
+    (home+'electrum/wordlist/english.txt', 'electrum/wordlist'),
+    (home+'electrum/wordlist/slip39.txt', 'electrum/wordlist'),
+    (home+'electrum/locale', 'electrum/locale'),
+    (home+'electrum/plugins', 'electrum/plugins'),
+    (home+'electrum/gui/icons', 'electrum/gui/icons'),
 ]
 datas += collect_data_files('trezorlib')
 datas += collect_data_files('safetlib')
@@ -52,23 +51,24 @@ datas += collect_data_files('ckcc')
 datas += collect_data_files('bitbox02')
 
 # We don't put these files in to actually include them in the script but to make the Analysis method scan them for imports
-a = Analysis([home+'run_electrum_nmc',
-              home+'electrum_nmc/electrum/gui/qt/main_window.py',
-              home+'electrum_nmc/electrum/gui/text.py',
-              home+'electrum_nmc/electrum/util.py',
-              home+'electrum_nmc/electrum/wallet.py',
-              home+'electrum_nmc/electrum/simple_config.py',
-              home+'electrum_nmc/electrum/bitcoin.py',
-              home+'electrum_nmc/electrum/dnssec.py',
-              home+'electrum_nmc/electrum/commands.py',
-              home+'electrum_nmc/electrum/plugins/cosigner_pool/qt.py',
-              home+'electrum_nmc/electrum/plugins/email_requests/qt.py',
-              home+'electrum_nmc/electrum/plugins/trezor/qt.py',
-              home+'electrum_nmc/electrum/plugins/safe_t/client.py',
-              home+'electrum_nmc/electrum/plugins/safe_t/qt.py',
-              home+'electrum_nmc/electrum/plugins/keepkey/qt.py',
-              home+'electrum_nmc/electrum/plugins/ledger/qt.py',
-              home+'electrum_nmc/electrum/plugins/coldcard/qt.py',
+a = Analysis([home+'run_electrum',
+              home+'electrum/gui/qt/main_window.py',
+              home+'electrum/gui/qt/qrreader/qtmultimedia/camera_dialog.py',
+              home+'electrum/gui/text.py',
+              home+'electrum/util.py',
+              home+'electrum/wallet.py',
+              home+'electrum/simple_config.py',
+              home+'electrum/bitcoin.py',
+              home+'electrum/dnssec.py',
+              home+'electrum/commands.py',
+              home+'electrum/plugins/cosigner_pool/qt.py',
+              home+'electrum/plugins/email_requests/qt.py',
+              home+'electrum/plugins/trezor/qt.py',
+              home+'electrum/plugins/safe_t/client.py',
+              home+'electrum/plugins/safe_t/qt.py',
+              home+'electrum/plugins/keepkey/qt.py',
+              home+'electrum/plugins/ledger/qt.py',
+              home+'electrum/plugins/coldcard/qt.py',
               #home+'packages/requests/utils.py'
               ],
              binaries=binaries,
@@ -94,7 +94,7 @@ for x in a.binaries.copy():
             a.binaries.remove(x)
             print('----> Removed x =', x)
 
-qt_data2remove=(r'pyqt5\qt\translations\qtwebengine_locales', )
+qt_data2remove=(r'pyqt5\qt\translations\qtwebengine_locales',)
 print("Removing Qt datas:", *qt_data2remove)
 for x in a.datas.copy():
     for r in qt_data2remove:
@@ -115,12 +115,12 @@ exe_standalone = EXE(
     pyz,
     a.scripts,
     a.binaries,
-    a.datas, 
-    name=os.path.join('build\\pyi.win32\\electrum-nmc', cmdline_name + ".exe"),
+    a.datas,
+    name=os.path.join('build\\pyi.win32\\electrum', cmdline_name + ".exe"),
     debug=False,
     strip=None,
     upx=False,
-    icon=home+'electrum_nmc/electrum/gui/icons/electrum_nmc.ico',
+    icon=home+'electrum/gui/icons/electrum.ico',
     console=False)
     # console=True makes an annoying black box pop up, but it does make Electrum output command line commands, with this turned off no output will be given but commands can still be used
 
@@ -128,36 +128,48 @@ exe_portable = EXE(
     pyz,
     a.scripts,
     a.binaries,
-    a.datas + [ ('is_portable', 'README.md', 'DATA' ) ],
-    name=os.path.join('build\\pyi.win32\\electrum-nmc', cmdline_name + "-portable.exe"),
+    a.datas + [('is_portable', 'README.md', 'DATA')],
+    name=os.path.join('build\\pyi.win32\\electrum', cmdline_name + "-portable.exe"),
     debug=False,
     strip=None,
     upx=False,
-    icon=home+'electrum_nmc/electrum/gui/icons/electrum_nmc.ico',
+    icon=home+'electrum/gui/icons/electrum.ico',
     console=False)
 
 #####
 # exe and separate files that NSIS uses to build installer "setup" exe
 
-exe_dependent = EXE(
+exe_inside_setup_noconsole = EXE(
     pyz,
     a.scripts,
     exclude_binaries=True,
-    name=os.path.join('build\\pyi.win32\\electrum-nmc', cmdline_name),
+    name=os.path.join('build\\pyi.win32\\electrum', cmdline_name),
     debug=False,
     strip=None,
     upx=False,
-    icon=home+'electrum_nmc/electrum/gui/icons/electrum_nmc.ico',
+    icon=home+'electrum/gui/icons/electrum.ico',
     console=False)
 
+exe_inside_setup_console = EXE(
+    pyz,
+    a.scripts,
+    exclude_binaries=True,
+    name=os.path.join('build\\pyi.win32\\electrum', cmdline_name+"-debug"),
+    debug=False,
+    strip=None,
+    upx=False,
+    icon=home+'electrum/gui/icons/electrum.ico',
+    console=True)
+
 coll = COLLECT(
-    exe_dependent,
+    exe_inside_setup_noconsole,
+    exe_inside_setup_console,
     a.binaries,
     a.zipfiles,
     a.datas,
     strip=None,
     upx=True,
     debug=False,
-    icon=home+'electrum_nmc/electrum/gui/icons/electrum_nmc.ico',
+    icon=home+'electrum/gui/icons/electrum.ico',
     console=False,
-    name=os.path.join('dist', 'electrum-nmc'))
+    name=os.path.join('dist', 'electrum'))

@@ -1,12 +1,12 @@
 Metadata-Version: 2.1
 Name: Electrum-DOGE
 Version: 4.0.1
-Summary: Lightweight Namecoin Wallet
-Home-page: https://www.namecoin.org/
-Author: The Namecoin developers; based on Electrum by Thomas Voegtlin and Electrum-DOGE by The Electrum-DOGE contributors
-Author-email: jeremy@namecoin.org
+Summary: Lightweight Dogecoin Wallet
+Home-page: https://www.Dogecoin.org/
+Author: The Dogecoin developers; based on Electrum by Thomas Voegtlin and Electrum-DOGE by The Electrum-DOGE contributors
+Author-email: jeremy@Dogecoin.org
 License: GNU GPLv3+ for Electrum-DOGE components; MIT Licence for all other components
-Description: Lightweight Namecoin Wallet
+Description: Lightweight Dogecoin Wallet
 Platform: UNKNOWN
 Requires-Python: >=3.6.1
 Provides-Extra: hardware

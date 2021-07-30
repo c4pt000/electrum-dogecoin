@@ -1,13 +1,13 @@
 [app]
 
 # (str) Title of your application
-title = Electrum-NMC
+title = Electrum
 
 # (str) Package name
-package.name = Electrum_NMC
+package.name = Electrum
 
 # (str) Package domain (needed for android/ios packaging)
-package.domain = org.namecoin.electrum_nmc
+package.domain = org.electrum
 
 # (str) Source code where the main.py live
 source.dir = .
@@ -20,39 +20,44 @@ source.exclude_exts = spec
 
 # (list) List of directory to exclude (let empty to not exclude anything)
 source.exclude_dirs = bin, build, dist, contrib,
-    electrum_nmc/electrum/tests,
-    electrum_nmc/electrum/gui/qt,
-    electrum_nmc/electrum/gui/kivy/theming/light
+    electrum/tests,
+    electrum/gui/qt,
+    electrum/gui/kivy/theming/light,
+    packages/qdarkstyle,
+    packages/qtpy
 # (list) List of exclusions using pattern matching
-source.exclude_patterns = Makefile,setup*
+source.exclude_patterns = Makefile,setup*,
+    # not reproducible:
+    packages/aiohttp-*.dist-info/*
 
 # (str) Application versioning (method 1)
 version.regex = APK_VERSION = '(.*)'
-version.filename = %(source.dir)s/electrum_nmc/electrum/version.py
+version.filename = %(source.dir)s/electrum/version.py
 
 # (str) Application versioning (method 2)
 #version = 1.9.8
 
 # (list) Application requirements
+# note: versions and hashes are pinned in ./p4a_recipes/*
 requirements =
-    # note: re python3.8, see #6147
-    hostpython3==3.7.9,
-    python3==3.7.9,
+    hostpython3,
+    python3,
     android,
     openssl,
     plyer,
-    # kivy 1.11.1
-    kivy==39c17457bae91baf8fe710dc989791e45879f136,
+    kivy,
     libffi,
     libsecp256k1,
     cryptography
 
 # (str) Presplash of the application
 #presplash.filename = %(source.dir)s/gui/kivy/theming/splash.png
-presplash.filename = %(source.dir)s/electrum_nmc/electrum/gui/icons/electrum_presplash.png
+presplash.filename = %(source.dir)s/electrum/gui/icons/electrum_presplash.png
 
 # (str) Icon of the application
-icon.filename = %(source.dir)s/electrum_nmc/electrum/gui/icons/electrum_launcher.png
+icon.filename = %(source.dir)s/electrum/gui/icons/android_electrum_icon_legacy.png
+icon.adaptive_foreground.filename = %(source.dir)s/electrum/gui/icons/android_electrum_icon_foreground.png
+icon.adaptive_background.filename = %(source.dir)s/electrum/gui/icons/android_electrum_icon_background.png
 
 # (str) Supported orientation (one of landscape, portrait or all)
 orientation = portrait
@@ -68,14 +73,15 @@ fullscreen = False
 # (list) Permissions
 android.permissions = INTERNET, CAMERA, WRITE_EXTERNAL_STORAGE
 
-# (int) Android API to use
-android.api = 28
+# (int) Android API to use  (targetSdkVersion AND compileSdkVersion)
+# note: when changing, Dockerfile also needs to be changed to install corresponding build tools
+android.api = 29
 
 # (int) Minimum API required. You will need to set the android.ndk_api to be as low as this value.
 android.minapi = 21
 
 # (str) Android NDK version to use
-android.ndk = 19c
+android.ndk = 22b
 
 # (int) Android NDK API to use (optional). This is the minimum API your app will support.
 android.ndk_api = 21
@@ -84,13 +90,25 @@ android.ndk_api = 21
 android.private_storage = True
 
 # (str) Android NDK directory (if empty, it will be automatically downloaded.)
-android.ndk_path = /opt/android/android-ndk
+android.ndk_path = /home/c4pt/opt/android-ndk
 
 # (str) Android SDK directory (if empty, it will be automatically downloaded.)
-android.sdk_path = /opt/android/android-sdk
+android.sdk_path = /home/c4pt/opt/android-sdk
 
 # (str) ANT directory (if empty, it will be automatically downloaded.)
-android.ant_path = /opt/android/apache-ant
+android.ant_path = /home/c4pt/opt/android-ant
+
+# (bool) If True, then skip trying to update the Android sdk
+# This can be useful to avoid excess Internet downloads or save time
+# when an update is due and you just want to test/build your package
+# note(ghost43): probably needed for reproducibility. versions pinned in Dockerfile.
+android.skip_update = True
+
+# (bool) If True, then automatically accept SDK license
+# agreements. This is intended for automation only. If set to False,
+# the default, you will be shown the license when first running
+# buildozer.
+android.accept_sdk_license = True
 
 # (str) Android entry point, default is ok for Kivy-based app
 #android.entrypoint = org.renpy.android.PythonActivity
@@ -104,7 +122,7 @@ android.ant_path = /opt/android/apache-ant
 
 # (list) List of Java files to add to the android project (can be java or a
 # directory containing the files)
-android.add_src = electrum_nmc/electrum/gui/kivy/data/java-classes/
+android.add_src = electrum/gui/kivy/data/java-classes/
 
 android.gradle_dependencies = me.dm7.barcodescanner:zxing:1.9.8
 
@@ -113,6 +131,7 @@ android.add_activities = org.electrum.qr.SimpleScannerActivity
 # (str) python-for-android branch to use, if not master, useful to try
 # not yet merged features.
 #android.branch = master
+p4a.branch = master
 
 # (str) OUYA Console category. Should be one of GAME or APP
 # If you leave this blank, OUYA support will not be enabled
@@ -136,7 +155,7 @@ android.manifest.launch_mode = singleTask
 
 # (str) The Android arch to build for, choices: armeabi-v7a, arm64-v8a, x86, x86_64
 # note: can be overwritten by APP_ANDROID_ARCH env var
-android.arch = armeabi-v7a
+#android.arch = armeabi-v7a
 
 # (list) Android application meta-data to set (key=value format)
 #android.meta_data =
@@ -147,6 +166,8 @@ android.arch = armeabi-v7a
 
 android.whitelist = lib-dynload/_csv.so
 
+# (bool) enables Android auto backup feature (Android API >=23)
+android.allow_backup = False
 
 #
 # Python for android (p4a) specific
@@ -156,7 +177,7 @@ android.whitelist = lib-dynload/_csv.so
 p4a.source_dir = /opt/python-for-android
 
 # (str) The directory in which python-for-android should look for your own build recipes (if any)
-#p4a.local_recipes =
+p4a.local_recipes = %(source.dir)s/contrib/android/p4a_recipes/
 
 # (str) Filename to the hook for p4a
 #p4a.hook =
@@ -185,6 +206,9 @@ p4a.source_dir = /opt/python-for-android
 
 # (int) Log level (0 = error only, 1 = info, 2 = debug (with command output))
 log_level = 1
+
+# (str) Path to build output (i.e. .apk, .ipa) storage
+bin_dir = ./dist
 
 
 # -----------------------------------------------------------------------------

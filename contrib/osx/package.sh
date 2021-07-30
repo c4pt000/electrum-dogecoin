@@ -1,5 +1,13 @@
 #!/usr/bin/env bash
 
+set -ex
+
+PROJECT_ROOT="$(dirname "$(readlink -e "$0")")/../.."
+CONTRIB="$PROJECT_ROOT/contrib"
+. "$CONTRIB"/build_tools_util.sh
+
+# note: GCC 10.1 will need an extra option, see https://github.com/bitcoin/bitcoin/pull/19553
+
 cdrkit_version=1.1.11
 cdrkit_download_path=http://distro.ibiblio.org/fatdog/source/600/c
 cdrkit_file_name=cdrkit-${cdrkit_version}.tar.bz2
@@ -14,25 +22,24 @@ export LD_PRELOAD=$(locate libfaketime.so.1)
 export FAKETIME="2000-01-22 00:00:00"
 export PATH=$PATH:~/bin
 
-. $(dirname "$0")/base.sh
 
 if [ -z "$1" ]; then
-    echo "Usage: $0 Electrum-NMC.app"
+    echo "Usage: $0 Electrum.app"
     exit -127
 fi
 
 mkdir -p ~/bin
 
 if ! which ${genisoimage} > /dev/null 2>&1; then
-	mkdir -p /tmp/electrum-nmc-macos
-	cd /tmp/electrum-nmc-macos
+	mkdir -p /tmp/electrum-macos
+	cd /tmp/electrum-macos
 	info "Downloading cdrkit $cdrkit_version"
 	wget -nc ${cdrkit_download_path}/${cdrkit_file_name}
 	tar xvf ${cdrkit_file_name}
 
 	info "Patching genisoimage"
 	cd cdrkit-${cdrkit_version}
-	patch -p1 < ../cdrkit-deterministic.patch
+	patch -p1 < $CONTRIB/osx/cdrkit-deterministic.patch
 
 	info "Building genisoimage"
 	cmake . -Wno-dev
@@ -41,8 +48,8 @@ if ! which ${genisoimage} > /dev/null 2>&1; then
 fi
 
 if ! which dmg > /dev/null 2>&1; then
-    mkdir -p /tmp/electrum-nmc-macos
-	cd /tmp/electrum-nmc-macos
+    mkdir -p /tmp/electrum-macos
+	cd /tmp/electrum-macos
 	info "Downloading libdmg"
     LD_PRELOAD= git clone ${libdmg_url}
     cd libdmg-hfsplus
@@ -60,9 +67,9 @@ test -f "$plist" || fail "Info.plist not found"
 VERSION=$(grep -1 ShortVersionString $plist |tail -1|gawk 'match($0, /<string>(.*)<\/string>/, a) {print a[1]}')
 echo $VERSION
 
-rm -rf /tmp/electrum-nmc-macos/image > /dev/null 2>&1
-mkdir /tmp/electrum-nmc-macos/image/
-cp -r $1 /tmp/electrum-nmc-macos/image/
+rm -rf /tmp/electrum-macos/image > /dev/null 2>&1
+mkdir /tmp/electrum-macos/image/
+cp -r $1 /tmp/electrum-macos/image/
 
 build_dir=$(dirname "$1")
 test -n "$build_dir" -a -d "$build_dir" || exit
@@ -73,16 +80,16 @@ ${genisoimage} \
     -D \
     -l \
     -probe \
-    -V "Electrum-NMC" \
+    -V "Electrum" \
     -no-pad \
     -r \
     -dir-mode 0755 \
     -apple \
-    -o Electrum-NMC_uncompressed.dmg \
-    /tmp/electrum-nmc-macos/image || fail "Unable to create uncompressed dmg"
+    -o Electrum_uncompressed.dmg \
+    /tmp/electrum-macos/image || fail "Unable to create uncompressed dmg"
 
-dmg dmg Electrum-NMC_uncompressed.dmg electrum-nmc-$VERSION.dmg || fail "Unable to create compressed dmg"
-rm Electrum-NMC_uncompressed.dmg
+dmg dmg Electrum_uncompressed.dmg electrum-$VERSION.dmg || fail "Unable to create compressed dmg"
+rm Electrum_uncompressed.dmg
 
 echo "Done."
-sha256sum electrum-nmc-$VERSION.dmg
+sha256sum electrum-$VERSION.dmg
