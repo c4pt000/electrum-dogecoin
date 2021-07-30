@@ -12,9 +12,11 @@ apt install google*fonts
 <br>
 <br>
 <br>
+![s1](https://raw.githubusercontent.com/c4pt000/electrum-dogecoin/main/electrum-dogecoin-about.png)
 <br>
 <br>
 <br>
+![s1](https://raw.githubusercontent.com/c4pt000/electrum-dogecoin/main/dogecoin-electrum.png)
 <br>
 <br>
 <br>
