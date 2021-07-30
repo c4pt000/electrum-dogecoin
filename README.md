@@ -1,8 +1,21 @@
 
-* 07-30-2021 (requires yum install google*fonts or apt install google*fonts for font formatting in console and cleaner look and feel)
+# * 07-30-2021 (requires yum install google*fonts or apt install google*fonts for font formatting in console and cleaner look and feel)
 <br>
-decimal floating errors possibly fixed (I have no dogecoin at the moment to test this)
+# decimal floating errors possibly fixed (I have no dogecoin at the moment to test this)
 
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
 <br>
 
 
