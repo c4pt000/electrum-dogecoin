@@ -948,13 +948,13 @@ def get_parent_main_window(widget):
     """Returns a reference to the ElectrumWindow this widget belongs to."""
     from .main_window import ElectrumWindow
     from .transaction_dialog import TxDialog
-    from .configure_name_dialog import ConfigureNameDialog
+#    from .configure_name_dialog import ConfigureNameDialog
     for _ in range(100):
         if widget is None:
             return None
         if isinstance(widget, ElectrumWindow):
             return widget
-        elif isinstance(widget, (TxDialog, ConfigureNameDialog)):
+        elif isinstance(widget, (TxDialog)):
             return widget.main_window
         else:
             widget = widget.parentWidget()
@@ -988,10 +988,10 @@ def webopen(url: str):
         # See #5425
         if os.fork() == 0:
             del os.environ['LD_LIBRARY_PATH']
-            webbrowser.open(url, new=2)
+            webbrowser.open(url)
             sys.exit(0)
     else:
-        webbrowser.open(url, new=2)
+        webbrowser.open(url)
 
 
 if __name__ == "__main__":

@@ -10,4 +10,4 @@ nano qrencode-devel qt5-qtbase-devel.x86_64 qt-devel qt4-devel wget -y
 
 	python3 -m pip install cryptography PyQt5
 	python3 -m pip install .
-	./run_electrum_radc 
+	./run_electrum_doge
