@@ -1,5 +1,5 @@
 
-# * 07-30-2021 (requires for font formatting in console , cleaner look and feel)
+# * 07-30-2021 (required for font formatting in console , cleaner look and feel)
 ```
 yum install google*fonts 
 or 
