@@ -5,20 +5,15 @@ yum install google*fonts
 or 
 apt install google*fonts
 ``` 
-<br>
+
 # decimal floating errors possibly fixed (I have no dogecoin at the moment to test this)
 
-<br>
-<br>
-<br>
-<br>
+
 ![s1](https://raw.githubusercontent.com/c4pt000/electrum-dogecoin/main/electrum-dogecoin-about.png)
 <br>
-<br>
-<br>
+
 ![s1](https://raw.githubusercontent.com/c4pt000/electrum-dogecoin/main/dogecoin-electrum.png)
-<br>
-<br>
+
 <br>
 <br>
 <br>
