@@ -1,4 +1,11 @@
+No computer at the moment to test this docker command
 
+```
+docker run -it -d -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix c4pt/electrum-dogecoin-fbal
+
+
+docker exec -it <docker_vm> bash
+```
 # * 07-30-2021 (required for font formatting in console , cleaner look and feel)
 ```
 yum install google*fonts 
