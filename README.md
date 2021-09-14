@@ -1,4 +1,9 @@
+regarding "electrum clients for radiocoin and dogecoin"
 
+# 09-14-2021
+* only use radiocoin-qt or radiocoind for now (avoid electrum-radiocoin , electrum-dogecoin still need to iron out bugs)
+
+market orders are live @ https://github.com/c4pt000/radiox-exchange and exbitron.com
 # native fix for conflict when both dogecoin and radiocoin are installed (since they both share the same executable as a conflict, since they are both a working rush job)
 ```
 sudo cp -rf electrum-radiocoin /usr/bin/
