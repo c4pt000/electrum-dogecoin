@@ -52,7 +52,7 @@ apt install google*fonts
 
 
 
-# use at your risk floating decimal issues, (for stability use dogecoin-qt)
+# use at your own risk floating decimal issues, (for stability use dogecoin-qt)
 
 <h3>you've been warned continue at your own risk</h3>
 
