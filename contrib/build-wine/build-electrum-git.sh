@@ -12,7 +12,7 @@ set -e
 
 pushd $WINEPREFIX/drive_c/electrum
 
-VERSION=`git describe --tags --dirty --always`
+VERSION=radiocoin-win10
 info "Last commit: $VERSION"
 
 # Load electrum-locale for this release

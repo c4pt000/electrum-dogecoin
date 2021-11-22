@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Electrum - lightweight Bitcoin client
+# Electrum - lightweight Radiocoin client
 # Copyright (C) 2015 Thomas Voegtlin
 #
 # Permission is hereby granted, free of charge, to any person
@@ -31,7 +31,8 @@ import zlib
 from enum import IntEnum
 
 from . import ecc
-from .util import profiler, InvalidPassword, WalletFileException, bfh, standardize_path
+from .util import (profiler, InvalidPassword, WalletFileException, bfh, standardize_path,
+                   test_read_write_permissions)
 
 from .wallet_db import WalletDB
 from .logging import Logger
@@ -62,7 +63,10 @@ class WalletStorage(Logger):
         self.logger.info(f"wallet path {self.path}")
         self.pubkey = None
         self.decrypted = ''
-        self._test_read_write_permissions(self.path)
+        try:
+            test_read_write_permissions(self.path)
+        except IOError as e:
+            raise StorageReadWriteError(e) from e
         if self.file_exists():
             with open(self.path, "r", encoding='utf-8') as f:
                 self.raw = f.read()
@@ -74,30 +78,7 @@ class WalletStorage(Logger):
     def read(self):
         return self.decrypted if self.is_encrypted() else self.raw
 
-    @classmethod
-    def _test_read_write_permissions(cls, path):
-        # note: There might already be a file at 'path'.
-        #       Make sure we do NOT overwrite/corrupt that!
-        temp_path = "%s.tmptest.%s" % (path, os.getpid())
-        echo = "fs r/w test"
-        try:
-            # test READ permissions for actual path
-            if os.path.exists(path):
-                with open(path, "r", encoding='utf-8') as f:
-                    f.read(1)  # read 1 byte
-            # test R/W sanity for "similar" path
-            with open(temp_path, "w", encoding='utf-8') as f:
-                f.write(echo)
-            with open(temp_path, "r", encoding='utf-8') as f:
-                echo2 = f.read()
-            os.remove(temp_path)
-        except Exception as e:
-            raise StorageReadWriteError(e) from e
-        if echo != echo2:
-            raise StorageReadWriteError('echo sanity-check failed')
-
-    @profiler
-    def write(self, data):
+    def write(self, data: str) -> None:
         s = self.encrypt_before_writing(data)
         temp_path = "%s.tmp.%s" % (self.path, os.getpid())
         with open(temp_path, "w", encoding='utf-8') as f:
@@ -105,7 +86,11 @@ class WalletStorage(Logger):
             f.flush()
             os.fsync(f.fileno())
 
-        mode = os.stat(self.path).st_mode if self.file_exists() else stat.S_IREAD | stat.S_IWRITE
+        try:
+            mode = os.stat(self.path).st_mode
+        except FileNotFoundError:
+            mode = stat.S_IREAD | stat.S_IWRITE
+
         # assert that wallet file does not exist, to prevent wallet corruption (see issue #5082)
         if not self.file_exists():
             assert not os.path.exists(self.path)
@@ -124,10 +109,7 @@ class WalletStorage(Logger):
             if encryption is disabled completely (self.is_encrypted() == False),
             or if encryption is enabled but the contents have already been decrypted.
         """
-        try:
-            return not self.is_encrypted() or bool(self.decrypted)
-        except AttributeError:
-            return False
+        return not self.is_encrypted() or bool(self.pubkey)
 
     def is_encrypted(self):
         """Return if storage encryption is currently enabled."""
@@ -194,7 +176,7 @@ class WalletStorage(Logger):
         s = plaintext
         if self.pubkey:
             s = bytes(s, 'utf8')
-            c = zlib.compress(s)
+            c = zlib.compress(s, level=zlib.Z_BEST_SPEED)
             enc_magic = self._get_encryption_magic()
             public_key = ecc.ECPubkey(bfh(self.pubkey))
             s = public_key.encrypt_message(c, enc_magic)
@@ -207,11 +189,14 @@ class WalletStorage(Logger):
             return
         if not self.is_past_initial_decryption():
             self.decrypt(password)  # this sets self.pubkey
-        if self.pubkey and self.pubkey != self.get_eckey_from_password(password).get_public_key_hex():
+        assert self.pubkey is not None
+        if self.pubkey != self.get_eckey_from_password(password).get_public_key_hex():
             raise InvalidPassword()
 
     def set_password(self, password, enc_version=None):
         """Set a password to be used for encrypting this storage."""
+        if not self.is_past_initial_decryption():
+            raise Exception("storage needs to be decrypted before changing password")
         if enc_version is None:
             enc_version = self._encryption_version
         if password and enc_version != StorageEncryptionVersion.PLAINTEXT:

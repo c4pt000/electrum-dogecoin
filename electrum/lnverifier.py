@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Electrum - lightweight Bitcoin client
+# Electrum - lightweight Radiocoin client
 # Copyright (C) 2018 The Electrum developers
 #
 # Permission is hereby granted, free of charge, to any person
@@ -34,8 +34,7 @@ from . import ecc
 from . import constants
 from .util import bh2u, bfh, NetworkJobOnDefaultServer
 from .lnutil import funding_output_script_from_keys, ShortChannelID
-from .verifier import verify_tx_is_in_block
-from .merkle import MerkleVerificationFailure
+from .verifier import verify_tx_is_in_block, MerkleVerificationFailure
 from .transaction import Transaction
 from .interface import GracefulDisconnect
 from .crypto import sha256d
@@ -75,8 +74,9 @@ class LNChannelVerifier(NetworkJobOnDefaultServer):
             self.unverified_channel_info[short_channel_id] = msg
             return True
 
-    async def _start_tasks(self):
-        async with self.taskgroup as group:
+    async def _run_tasks(self, *, taskgroup):
+        await super()._run_tasks(taskgroup=taskgroup)
+        async with taskgroup as group:
             await group.spawn(self.main)
 
     async def main(self):
@@ -111,8 +111,9 @@ class LNChannelVerifier(NetworkJobOnDefaultServer):
         # we are verifying channel announcements as they are from untrusted ln peers.
         # we use electrum servers to do this. however we don't trust electrum servers either...
         try:
-            result = await self.network.get_txid_from_txpos(
-                block_height, short_channel_id.txpos, True)
+            async with self._network_request_semaphore:
+                result = await self.network.get_txid_from_txpos(
+                    block_height, short_channel_id.txpos, True)
         except aiorpcx.jsonrpc.RPCError:
             # the electrum server is complaining about the txpos for given block.
             # it is not clear what to do now, but let's believe the server.
@@ -129,7 +130,8 @@ class LNChannelVerifier(NetworkJobOnDefaultServer):
             # the electrum server sent an incorrect proof. blame is on server, not the ln peer
             raise GracefulDisconnect(e) from e
         try:
-            raw_tx = await self.network.get_transaction(tx_hash)
+            async with self._network_request_semaphore:
+                raw_tx = await self.network.get_transaction(tx_hash)
         except aiorpcx.jsonrpc.RPCError as e:
             # the electrum server can't find the tx; but it was the
             # one who told us about the txid!! blame is on server

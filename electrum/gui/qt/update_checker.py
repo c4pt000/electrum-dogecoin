@@ -75,8 +75,8 @@ class UpdateCheck(QDialog, Logger):
         self.pb.hide()
 
     @staticmethod
-    def is_newer(latest_version):
-        return latest_version > StrictVersion(version.ELECTRUM_VERSION)
+#    def is_newer(latest_version):
+#       return latest_version > StrictVersion(version.ELECTRUM_VERSION)
 
     def update_view(self, latest_version=None):
         if latest_version:
@@ -124,7 +124,7 @@ class UpdateCheckThread(QThread, Logger):
                     sig = base64.b64decode(sig)
                     msg = version_num.encode('utf-8')
                     if ecc.verify_message_with_address(address=address, sig65=sig, message=msg,
-                                                       net=constants.BitcoinMainnet):
+                                                       net=constants.RadiocoinMainnet):
                         self.logger.info(f"valid sig for version announcement '{version_num}' from address '{address}'")
                         break
                 else:

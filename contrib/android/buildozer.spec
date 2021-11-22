@@ -1,10 +1,10 @@
 [app]
 
 # (str) Title of your application
-title = Electrum
+title = Electrum-RADC
 
 # (str) Package name
-package.name = Electrum
+package.name = Radiocoin
 
 # (str) Package domain (needed for android/ios packaging)
 package.domain = org.electrum
@@ -15,29 +15,42 @@ source.dir = .
 # (list) Source files to include (let empty to include all the files)
 source.include_exts = py,png,jpg,kv,atlas,ttf,txt,gif,pem,mo,vs,fs,json,csv
 
+# (list) List of inclusions using pattern matching
+#source.include_patterns = assets/*,images/*.png
+
 # (list) Source files to exclude (let empty to not exclude anything)
 source.exclude_exts = spec
 
 # (list) List of directory to exclude (let empty to not exclude anything)
+#source.exclude_dirs = tests, bin
 source.exclude_dirs = bin, build, dist, contrib,
     electrum/tests,
     electrum/gui/qt,
     electrum/gui/kivy/theming/light,
     packages/qdarkstyle,
     packages/qtpy
+
 # (list) List of exclusions using pattern matching
+#source.exclude_patterns = license,images/*/*.jpg
 source.exclude_patterns = Makefile,setup*,
     # not reproducible:
     packages/aiohttp-*.dist-info/*
 
+
+# (str) Application versioning (method 1)
+#version = 0.1
 # (str) Application versioning (method 1)
 version.regex = APK_VERSION = '(.*)'
 version.filename = %(source.dir)s/electrum/version.py
 
 # (str) Application versioning (method 2)
-#version = 1.9.8
+# version.regex = __version__ = ['"](.*)['"]
+# version.filename = %(source.dir)s/main.py
 
 # (list) Application requirements
+# comma separated e.g. requirements = sqlite3,kivy
+#requirements = python3,kivy
+
 # note: versions and hashes are pinned in ./p4a_recipes/*
 requirements =
     hostpython3,
@@ -81,7 +94,7 @@ android.api = 29
 android.minapi = 21
 
 # (str) Android NDK version to use
-android.ndk = 22b
+android.ndk = 21e
 
 # (int) Android NDK API to use (optional). This is the minimum API your app will support.
 android.ndk_api = 21
@@ -89,14 +102,17 @@ android.ndk_api = 21
 # (bool) Use --private data storage (True) or --dir public storage (False)
 android.private_storage = True
 
+
+android.bundle.enableUncompressedNativeLibs = false
+
 # (str) Android NDK directory (if empty, it will be automatically downloaded.)
-android.ndk_path = /home/c4pt/opt/android-ndk
+android.ndk_path = /opt/android/android-ndk
 
 # (str) Android SDK directory (if empty, it will be automatically downloaded.)
-android.sdk_path = /home/c4pt/opt/android-sdk
+android.sdk_path = /opt/android/android-sdk
 
 # (str) ANT directory (if empty, it will be automatically downloaded.)
-android.ant_path = /home/c4pt/opt/android-ant
+android.ant_path = /opt/android/apache-ant
 
 # (bool) If True, then skip trying to update the Android sdk
 # This can be useful to avoid excess Internet downloads or save time
@@ -130,8 +146,20 @@ android.add_activities = org.electrum.qr.SimpleScannerActivity
 
 # (str) python-for-android branch to use, if not master, useful to try
 # not yet merged features.
-#android.branch = master
-p4a.branch = master
+p4a.branch = develop
+
+
+
+android.debug_artifact = aab
+
+
+
+
+
+
+
+
+
 
 # (str) OUYA Console category. Should be one of GAME or APP
 # If you leave this blank, OUYA support will not be enabled
@@ -156,6 +184,7 @@ android.manifest.launch_mode = singleTask
 # (str) The Android arch to build for, choices: armeabi-v7a, arm64-v8a, x86, x86_64
 # note: can be overwritten by APP_ANDROID_ARCH env var
 #android.arch = armeabi-v7a
+android.archs = arm64-v8a
 
 # (list) Android application meta-data to set (key=value format)
 #android.meta_data =
@@ -164,7 +193,7 @@ android.manifest.launch_mode = singleTask
 # project.properties automatically.)
 #android.library_references =
 
-android.whitelist = lib-dynload/_csv.so
+android.whitelist = lib-dynload/_csv.so, sqlite3
 
 # (bool) enables Android auto backup feature (Android API >=23)
 android.allow_backup = False
@@ -247,3 +276,12 @@ bin_dir = ./dist
 # Then, invoke the command line with the "demo" profile:
 #
 #     buildozer --profile demo android debug
+
+
+
+
+
+
+
+
+

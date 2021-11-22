@@ -5,7 +5,7 @@
 import hashlib
 from typing import List, Tuple, NamedTuple, Union, Iterable, Sequence, Optional
 
-from .util import bfh, bh2u, BitcoinException
+from .util import bfh, bh2u, DogecoinException
 from . import constants
 from . import ecc
 from .crypto import hash_160, hmac_oneshot
@@ -54,7 +54,7 @@ def _CKD_priv(parent_privkey: bytes, parent_chaincode: bytes,
     try:
         keypair = ecc.ECPrivkey(parent_privkey)
     except ecc.InvalidECPointException as e:
-        raise BitcoinException('Impossible xprv (not within curve order)') from e
+        raise DogecoinException('Impossible xprv (not within curve order)') from e
     parent_pubkey = keypair.get_public_key_bytes(compressed=True)
     if is_hardened_child:
         data = bytes([0]) + parent_privkey + child_index
@@ -108,7 +108,7 @@ def xpub_header(xtype: str, *, net=None) -> bytes:
     return net.XPUB_HEADERS[xtype].to_bytes(length=4, byteorder="big")
 
 
-class InvalidMasterKeyVersionBytes(BitcoinException): pass
+class InvalidMasterKeyVersionBytes(DogecoinException): pass
 
 
 class BIP32Node(NamedTuple):
@@ -125,7 +125,7 @@ class BIP32Node(NamedTuple):
             net = constants.net
         xkey = DecodeBase58Check(xkey)
         if len(xkey) != 78:
-            raise BitcoinException('Invalid length for extended key: {}'
+            raise DogecoinException('Invalid length for extended key: {}'
                                    .format(len(xkey)))
         depth = xkey[4]
         fingerprint = xkey[5:9]
@@ -154,7 +154,7 @@ class BIP32Node(NamedTuple):
 
     @classmethod
     def from_rootseed(cls, seed: bytes, *, xtype: str) -> 'BIP32Node':
-        I = hmac_oneshot(b"Bitcoin seed", seed, hashlib.sha512)
+        I = hmac_oneshot(b"Radiocoin seed", seed, hashlib.sha512)
         master_k = I[0:32]
         master_c = I[32:]
         return BIP32Node(xtype=xtype,

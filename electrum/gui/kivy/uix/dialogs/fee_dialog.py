@@ -73,23 +73,23 @@ Builder.load_string('''
 
 class FeeSliderDialog:
 
-    def __init__(self, config, slider):
+    def __init__(self, config):
         self.config = config
-        self.slider = slider
+       # self.slider = slider
         self.read_config()
-        self.update_slider()
+       # self.update_slider()
 
     def get_method(self):
         dynfees = self.method > 0
         mempool = self.method == 2
         return dynfees, mempool
 
-    def update_slider(self):
-        dynfees, mempool = self.get_method()
-        maxp, pos, fee_rate = self.config.get_fee_slider(dynfees, mempool)
-        self.slider.range = (0, maxp)
-        self.slider.step = 1
-        self.slider.value = pos
+   # def update_slider(self):
+    #    dynfees, mempool = self.get_method()
+     #   maxp, pos, fee_rate = self.config.get_fee_slider(dynfees, mempool)
+      #  self.slider.range = (0, maxp)
+       # self.slider.step = 1
+        #self.slider.value = pos
 
     def read_config(self):
         mempool = self.config.use_mempool_fees()
@@ -117,7 +117,7 @@ class FeeDialog(FeeSliderDialog, Factory.Popup):
 
     def __init__(self, app, config, callback):
         Factory.Popup.__init__(self)
-        FeeSliderDialog.__init__(self, config, self.ids.slider)
+      #  FeeSliderDialog.__init__(self, config, self.ids.slider)
         self.app = app
         self.config = config
         self.callback = callback
@@ -127,11 +127,11 @@ class FeeDialog(FeeSliderDialog, Factory.Popup):
         self.save_config()
         self.callback()
 
-    def on_slider(self, value):
-        self.update_text()
+ #   def on_slider(self, value):
+  #      self.update_text()
 
     def update_text(self):
-        pos = int(self.ids.slider.value)
+  #      pos = int(self.ids.slider.value)
         dynfees, mempool = self.get_method()
         if self.method == 2:
             fee_rate = self.config.depth_to_fee(pos)

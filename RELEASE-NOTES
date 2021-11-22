@@ -228,11 +228,11 @@ below are user-visible.
    - fix some issues with QR scanning by building zbar ourselves (#6593)
    - when using setup exe, also install a debug binary (#6603)
  * Ledger: fix "The derivation path is unusual" warnings (#6512)
-   (needs Bitcoin app 1.4.8+ installed on device)
+   (needs Radiocoin app 1.4.8+ installed on device)
  * A few other minor bugfixes and usability improvements.
 
 # Release 4.0.3 - (Sep 11, 2020)
- * PSBT: restore compatibility with Bitcoin Core following CVE-2020-14199:
+ * PSBT: restore compatibility with Radiocoin Core following CVE-2020-14199:
    we now allow a PSBT input to have both UTXO and WITNESS_UTXO (#6429).
    (PSBTs created since 4.0.1 already contained UTXO for segwit inputs)
  * Hardware wallets:
@@ -299,7 +299,7 @@ below are user-visible.
      An Electrum daemon can be configured to be used as a remote
      watchtower by setting 'watchtower_address', 'watchtower_user' and
      'watchtower_password'.
- * Partially Signed Bitcoin Transactions (PSBT, BIP-174) are supported
+ * Partially Signed Radiocoin Transactions (PSBT, BIP-174) are supported
    (#5721). The previous Electrum partial transaction format is no
    longer supported, i.e. this is an incompatible change. Users should
    make sure that all instances of Electrum they use to co-sign or
@@ -403,7 +403,7 @@ below are user-visible.
  * fix Revealer in Windows and MacOS binaries (#5027)
  * fiat rate providers:
    - added CoinGecko.com and CoinCap.io
-   - BitcoinAverage now only provides historical exchange rates for
+   - RadiocoinAverage now only provides historical exchange rates for
      paying customers. Changed default provider to CoinGecko.com (#5188)
  * hardware wallets:
    - Ledger: Nano X is now recognized (#5140)
@@ -442,7 +442,7 @@ below are user-visible.
    hw wallets still need to set udev rules themselves.
  * hw wallets: fix a regression during transaction signing that prompts
    the user too many times for confirmations (commit 2729909)
- * transactions now set nVersion to 2, to mimic Bitcoin Core
+ * transactions now set nVersion to 2, to mimic Radiocoin Core
  * fix Qt bug that made all hw wallets unusable on Windows 8.1 (#4960)
  * fix bugs in wallet creation wizard that resulted in corrupted
    wallets being created in rare cases (#5082, #5057)
@@ -453,7 +453,7 @@ below are user-visible.
 
  * Do not expose users to server error messages (#4968)
  * Notify users of new releases. Release announcements must be signed,
-   and they are verified byElectrum using a hardcoded Bitcoin address.
+   and they are verified byElectrum using a hardcoded Radiocoin address.
  * Hardware wallet fixes (#4991, #4993, #5006)
  * Display only QR code in QRcode Window
  * Fixed code signing on MacOS
@@ -641,7 +641,7 @@ below are user-visible.
 
  * Memory-pool based fee estimation. Dynamic fees can target a desired
    depth in the memory pool. This feature is optional, and ETA-based
-   estimates from Bitcoin Core are still available. Note that miners
+   estimates from Radiocoin Core are still available. Note that miners
    could exploit this feature, if they conspired and filled the memory
    pool with expensive transactions that never get mined. However,
    since the Electrum client already trusts an Electrum server with
@@ -847,7 +847,7 @@ issue #3374. Users should upgrade to 3.0.5.
 # Release 2.9 - Independence (July 27th, 2017)
   * Multiple Chain Validation: Electrum will download and validate
     block headers sent by servers that may follow different branches
-    of a fork in the Bitcoin blockchain. Instead of a linear sequence,
+    of a fork in the Radiocoin blockchain. Instead of a linear sequence,
     block headers are organized in a tree structure. Branching points
     are located efficiently using binary search. The purpose of MCV is
     to detect and handle blockchain forks that are invisible to the
@@ -1017,7 +1017,7 @@ issue #3374. Users should upgrade to 3.0.5.
    wallet that has several accounts. Make sure that you have saved
    your seed phrase before you upgrade Electrum.
  * This version introduces a separation between wallets types and
-   keystores types. 'Wallet type' defines the type of Bitcoin contract
+   keystores types. 'Wallet type' defines the type of Radiocoin contract
    used in the wallet, while 'keystore type' refers to the method used
    to store private keys. Therefore, so-called 'hardware wallets' will
    be referred to as 'hardware keystores'.
@@ -1154,13 +1154,13 @@ issue #3374. Users should upgrade to 3.0.5.
  * Various GUI improvements
 
 # Release 2.4
- * Payment to DNS names storing a Bitcoin addresses (OpenAlias) is
+ * Payment to DNS names storing a Radiocoin addresses (OpenAlias) is
    supported directly, without activating a plugin. The verification
    uses DNSSEC.
  * The DNSSEC verification code was rewritten. The previous code,
    which was part of the OpenAlias plugin, is vulnerable and should
    not be trusted (Electrum 2.0 to 2.3).
- * Payment requests can be signed using Bitcoin addresses stored
+ * Payment requests can be signed using Radiocoin addresses stored
    in DNS (OpenAlias). The identity of the requestor is verified using
    DNSSEC.
  * Payment requests signed with OpenAlias keys can be shared as

@@ -64,7 +64,7 @@ FEERATE_STATIC_VALUES = [
 
 
 
-# Regtest feerate doesn't need Namecoin's 100x adjustment.
+# Regtest feerate doesn't need Radiocoin's 100x adjustment.
 FEERATE_REGTEST_HARDCODED = 180000  # for eclair compat
 
 FEE_RATIO_HIGH_WARNING = 0.05  # warn user if fee/amount for on-chain tx is higher than this
@@ -163,7 +163,7 @@ class SimpleConfig(Logger):
             path = os.path.join(path, 'simnet')
             make_dir(path, allow_symlink=False)
 
-        self.logger.info(f"electrum-doge directory {path}")
+        self.logger.info(f"electrum-nmc directory {path}")
         return path
 
     def rename_config_keys(self, config, keypairs, deprecation_warning=False):
@@ -252,7 +252,7 @@ class SimpleConfig(Logger):
         base_unit = self.user_config.get('base_unit')
         if isinstance(base_unit, str):
             self._set_key_in_user_config('base_unit', None)
-            map_ = {'radc':8, 'mradc':5, 'uradc':2, 'bits':2, 'noise':0}
+            map_ = {'nmc':8, 'mnmc':5, 'unmc':2, 'bits':2, 'noise':0}
             decimal_point = map_.get(base_unit.lower())
             self._set_key_in_user_config('decimal_point', decimal_point)
 
@@ -319,7 +319,7 @@ class SimpleConfig(Logger):
         new_path = os.path.join(self.path, "wallets", "default_wallet")
 
         # default path in pre 1.9 versions
-        old_path = os.path.join(self.path, "electrum-doge.dat")
+        old_path = os.path.join(self.path, "electrum-nmc.dat")
         if os.path.exists(old_path) and not os.path.exists(new_path):
             os.rename(old_path, new_path)
 
@@ -555,8 +555,8 @@ class SimpleConfig(Logger):
 
         fee_level: float between 0.0 and 1.0, representing fee slider position
         """
-        if constants.net is constants.BitcoinRegtest:
-            return FEERATE_REGTEST_HARDCODED
+      #  if constants.net is constants.BitcoinRegtest:
+       #     return FEERATE_REGTEST_HARDCODED
         if dyn is None:
             dyn = self.is_dynfee()
         if mempool is None:
@@ -676,7 +676,7 @@ class SimpleConfig(Logger):
 
 
 def read_user_config(path):
-    """Parse and store the user config settings in electrum-doge.conf into user_config[]."""
+    """Parse and store the user config settings in electrum-nmc.conf into user_config[]."""
     if not path:
         return {}
     config_path = os.path.join(path, "config")

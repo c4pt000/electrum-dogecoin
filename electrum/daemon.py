@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Electrum - lightweight Bitcoin client
+# Electrum - lightweight Radiocoin client
 # Copyright (C) 2015 Thomas Voegtlin
 #
 # Permission is hereby granted, free of charge, to any person
@@ -29,16 +29,14 @@ import time
 import traceback
 import sys
 import threading
-from typing import Dict, Optional, Tuple, Iterable, Callable, Union, Sequence, Mapping
+from typing import Dict, Optional, Tuple, Iterable, Callable, Union, Sequence, Mapping, TYPE_CHECKING
 from base64 import b64decode, b64encode
 from collections import defaultdict
-import concurrent
-from concurrent import futures
 import json
 
 import aiohttp
 from aiohttp import web, client_exceptions
-from aiorpcx import TaskGroup
+from aiorpcx import TaskGroup, timeout_after, TaskTimeout, ignore_after
 
 from . import util
 from .network import Network
@@ -52,6 +50,9 @@ from .commands import known_commands, Commands
 from .simple_config import SimpleConfig
 from .exchange_rate import FxThread
 from .logging import get_logger, Logger
+
+if TYPE_CHECKING:
+    from electrum import gui
 
 
 _logger = get_logger(__name__)
@@ -120,6 +121,10 @@ def request(config: SimpleConfig, endpoint, args=(), timeout=60):
 def get_rpc_credentials(config: SimpleConfig) -> Tuple[str, str]:
     rpc_user = config.get('rpcuser', None)
     rpc_password = config.get('rpcpassword', None)
+    if rpc_user == '':
+        rpc_user = None
+    if rpc_password == '':
+        rpc_password = None
     if rpc_user is None or rpc_password is None:
         rpc_user = 'user'
         bits = 128
@@ -130,8 +135,6 @@ def get_rpc_credentials(config: SimpleConfig) -> Tuple[str, str]:
         rpc_password = to_string(pw_b64, 'ascii')
         config.set_key('rpcuser', rpc_user)
         config.set_key('rpcpassword', rpc_password, save=True)
-    elif rpc_password == '':
-        _logger.warning('RPC authentication is disabled.')
     return rpc_user, rpc_password
 
 
@@ -196,7 +199,10 @@ class AuthenticatedServer(Logger):
         except Exception as e:
             self.logger.exception("invalid request")
             return web.Response(text='Invalid Request', status=500)
-        response = {'id': _id}
+        response = {
+            'id': _id,
+            'jsonrpc': '2.0',
+        }
         try:
             if isinstance(params, dict):
                 response['result'] = await f(**params)
@@ -204,7 +210,10 @@ class AuthenticatedServer(Logger):
                 response['result'] = await f(*params)
         except BaseException as e:
             self.logger.exception("internal error while executing RPC")
-            response['error'] = str(e)
+            response['error'] = {
+                'code': 1,
+                'message': str(e),
+            }
         return web.json_response(response)
 
 
@@ -248,7 +257,7 @@ class CommandsServer(AuthenticatedServer):
             else:
                 response = "error: current GUI does not support multiple windows"
         else:
-            response = "Error: Electrum-DOGE is running in daemon mode. Please stop the daemon first."
+            response = "Error: Electrum is running in daemon mode. Please stop the daemon first."
         return response
 
     async def run_cmdline(self, config_options):
@@ -297,7 +306,7 @@ class WatchTowerServer(AuthenticatedServer):
         await site.start()
 
     async def get_ctn(self, *args):
-        return await self.lnwatcher.sweepstore.get_ctn(*args)
+        return await self.lnwatcher.get_ctn(*args)
 
     async def add_sweep_tx(self, *args):
         return await self.lnwatcher.sweepstore.add_sweep_tx(*args)
@@ -318,7 +327,7 @@ class PayServer(Logger):
         # FIXME specify wallet somehow?
         return list(self.daemon.get_wallets().values())[0]
 
-    async def on_payment(self, evt, key, status):
+    async def on_payment(self, evt, wallet, key, status):
         if status == PR_PAID:
             self.pending[key].set()
 
@@ -364,7 +373,7 @@ class PayServer(Logger):
         if not request:
             return web.HTTPNotFound()
         pr = make_request(self.config, request)
-        return web.Response(body=pr.SerializeToString(), content_type='application/namecoin-paymentrequest')
+        return web.Response(body=pr.SerializeToString(), content_type='application/bitcoin-paymentrequest')
 
     async def get_status(self, request):
         ws = web.WebSocketResponse()
@@ -399,17 +408,20 @@ class PayServer(Logger):
 class Daemon(Logger):
 
     network: Optional[Network]
+    gui_object: Optional[Union['gui.qt.ElectrumGui', 'gui.kivy.ElectrumGui']]
 
     @profiler
     def __init__(self, config: SimpleConfig, fd=None, *, listen_jsonrpc=True):
         Logger.__init__(self)
-        self.running = False
-        self.running_lock = threading.Lock()
         self.config = config
+        self.listen_jsonrpc = listen_jsonrpc
         if fd is None and listen_jsonrpc:
             fd = get_file_descriptor(config)
             if fd is None:
                 raise Exception('failed to lock daemon; already running?')
+        if 'wallet_path' in config.cmdline_options:
+            self.logger.warning("Ignoring parameter 'wallet_path' for daemon. "
+                                "Use the load_wallet command instead.")
         self.asyncio_loop = asyncio.get_event_loop()
         self.network = None
         if not config.get('offline'):
@@ -438,7 +450,12 @@ class Daemon(Logger):
             daemon_jobs.append(self.watchtower.run)
         if self.network:
             self.network.start(jobs=[self.fx.run])
+            # prepare lightning functionality, also load channel db early
+            if self.config.get('use_gossip', False):
+                self.network.start_gossip()
 
+        self.stopping_soon = threading.Event()
+        self.stopped_event = asyncio.Event()
         self.taskgroup = TaskGroup()
         asyncio.run_coroutine_threadsafe(self._run(jobs=daemon_jobs), self.asyncio_loop)
 
@@ -457,6 +474,7 @@ class Daemon(Logger):
             self.logger.exception("taskgroup died.")
         finally:
             self.logger.info("taskgroup stopped.")
+            self.stopping_soon.set()
 
     def load_wallet(self, path, password, *, manual_upgrades=True) -> Optional[Abstract_Wallet]:
         path = standardize_path(path)
@@ -505,48 +523,56 @@ class Daemon(Logger):
 
     def stop_wallet(self, path: str) -> bool:
         """Returns True iff a wallet was found."""
+        # note: this must not be called from the event loop. # TODO raise if so
+        fut = asyncio.run_coroutine_threadsafe(self._stop_wallet(path), self.asyncio_loop)
+        return fut.result()
+
+    async def _stop_wallet(self, path: str) -> bool:
+        """Returns True iff a wallet was found."""
         path = standardize_path(path)
         wallet = self._wallets.pop(path, None)
         if not wallet:
             return False
-        wallet.stop()
+        await wallet.stop()
         return True
 
     def run_daemon(self):
-        self.running = True
         try:
-            while self.is_running():
-                time.sleep(0.1)
+            self.stopping_soon.wait()
         except KeyboardInterrupt:
-            self.running = False
+            self.stopping_soon.set()
         self.on_stop()
 
-    def is_running(self):
-        with self.running_lock:
-            return self.running and not self.taskgroup.closed()
-
-    def stop(self):
-        with self.running_lock:
-            self.running = False
+    async def stop(self):
+        self.stopping_soon.set()
+        await self.stopped_event.wait()
 
     def on_stop(self):
-        if self.gui_object:
-            self.gui_object.stop()
-        # stop network/wallets
-        for k, wallet in self._wallets.items():
-            wallet.stop()
-        if self.network:
-            self.logger.info("shutting down network")
-            self.network.stop()
-        self.logger.info("stopping taskgroup")
-        fut = asyncio.run_coroutine_threadsafe(self.taskgroup.cancel_remaining(), self.asyncio_loop)
         try:
-            fut.result(timeout=2)
-        except (concurrent.futures.TimeoutError, concurrent.futures.CancelledError, asyncio.CancelledError):
-            pass
-        self.logger.info("removing lockfile")
-        remove_lockfile(get_lockfile(self.config))
-        self.logger.info("stopped")
+            self.logger.info("on_stop() entered. initiating shutdown")
+            if self.gui_object:
+                self.gui_object.stop()
+
+            async def stop_async():
+                self.logger.info("stopping all wallets")
+                async with TaskGroup() as group:
+                    for k, wallet in self._wallets.items():
+                        await group.spawn(wallet.stop())
+                self.logger.info("stopping network and taskgroup")
+                async with ignore_after(2):
+                    async with TaskGroup() as group:
+                        if self.network:
+                            await group.spawn(self.network.stop(full_shutdown=True))
+                        await group.spawn(self.taskgroup.cancel_remaining())
+
+            fut = asyncio.run_coroutine_threadsafe(stop_async(), self.asyncio_loop)
+            fut.result()
+        finally:
+            if self.listen_jsonrpc:
+                self.logger.info("removing lockfile")
+                remove_lockfile(get_lockfile(self.config))
+            self.logger.info("stopped")
+            self.asyncio_loop.call_soon_threadsafe(self.stopped_event.set)
 
     def run_gui(self, config, plugins):
         threading.current_thread().setName('GUI')

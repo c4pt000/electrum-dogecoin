@@ -3,11 +3,11 @@
 from decimal import Decimal
 from typing import Union
 
-from PyQt5.QtCore import pyqtSignal, Qt
+from PyQt5.QtCore import pyqtSignal, Qt, QSize
 from PyQt5.QtGui import QPalette, QPainter
-from PyQt5.QtWidgets import (QLineEdit, QStyle, QStyleOptionFrame)
+from PyQt5.QtWidgets import (QLineEdit, QStyle, QStyleOptionFrame, QSizePolicy)
 
-from .util import char_width_in_lineedit
+from .util import char_width_in_lineedit, ColorScheme
 
 from electrum.util import (format_satoshis_plain, decimal_point_to_base_unit_name,
                            FEERATE_PRECISION, quantize_feerate)
@@ -21,18 +21,31 @@ class FreezableLineEdit(QLineEdit):
         self.setFrame(not b)
         self.frozen.emit()
 
-class AmountEdit(FreezableLineEdit):
+
+class SizedFreezableLineEdit(FreezableLineEdit):
+
+    def __init__(self, *, width: int, parent=None):
+        super().__init__(parent)
+        self._width = width
+        self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
+        self.setMaximumWidth(width)
+
+    def sizeHint(self) -> QSize:
+        sh = super().sizeHint()
+        return QSize(self._width, sh.height())
+
+
+class AmountEdit(SizedFreezableLineEdit):
     shortcut = pyqtSignal()
 
     def __init__(self, base_unit, is_int=False, parent=None):
-        QLineEdit.__init__(self, parent)
         # This seems sufficient for hundred-BTC amounts with 8 decimals
-        self.setFixedWidth(16 * char_width_in_lineedit())
+        width = 16 * char_width_in_lineedit()
+        super().__init__(width=width, parent=parent)
         self.base_unit = base_unit
         self.textChanged.connect(self.numbify)
         self.is_int = is_int
         self.is_shortcut = False
-        self.help_palette = QPalette()
         self.extra_precision = 0
 
     def decimal_point(self):
@@ -69,8 +82,8 @@ class AmountEdit(FreezableLineEdit):
             textRect = self.style().subElementRect(QStyle.SE_LineEditContents, panel, self)
             textRect.adjust(2, 0, -10, 0)
             painter = QPainter(self)
-            painter.setPen(self.help_palette.brush(QPalette.Disabled, QPalette.Text).color())
-            painter.drawText(textRect, Qt.AlignRight | Qt.AlignVCenter, self.base_unit())
+            painter.setPen(ColorScheme.GRAY.as_color())
+            painter.drawText(textRect, int(Qt.AlignRight | Qt.AlignVCenter), self.base_unit())
 
     def get_amount(self) -> Union[None, Decimal, int]:
         try:
@@ -112,6 +125,7 @@ class BTCAmountEdit(AmountEdit):
             self.setText(" ")  # Space forces repaint in case units changed
         else:
             self.setText(format_satoshis_plain(amount_sat, decimal_point=self.decimal_point()))
+        self.repaint()  # macOS hack for #6269
 
 
 class FeerateEdit(BTCAmountEdit):
@@ -121,7 +135,7 @@ class FeerateEdit(BTCAmountEdit):
         self.extra_precision = FEERATE_PRECISION
 
     def _base_unit(self):
-        return 'noise/byte'
+        return 'sat/byte'
 
     def get_amount(self):
         sat_per_byte_amount = BTCAmountEdit.get_amount(self)

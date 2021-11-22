@@ -22,12 +22,11 @@ if [ ! -z "$ELECBUILD_NOCACHE" ] ; then
 fi
 
 info "building docker image."
-cp "$CONTRIB/deterministic-build/requirements-build-android.txt" "$CONTRIB_ANDROID/requirements-build-android.txt"
 sudo docker build \
     $DOCKER_BUILD_FLAGS \
     -t electrum-android-builder-img \
-    "$CONTRIB_ANDROID"
-rm "$CONTRIB_ANDROID/requirements-build-android.txt"
+    --file "$CONTRIB_ANDROID/Dockerfile" \
+    "$PROJECT_ROOT"
 
 
 # maybe do fresh clone
@@ -52,14 +51,14 @@ fi
 
 info "building binary..."
 mkdir --parents "$PROJECT_ROOT_OR_FRESHCLONE_ROOT"/.buildozer/.gradle
-sudo docker run -it -d --rm \
+sudo docker run -d -it --rm \
     --name electrum-android-builder-cont \
     -v "$PROJECT_ROOT_OR_FRESHCLONE_ROOT":/home/user/wspace/electrum \
     -v "$PROJECT_ROOT_OR_FRESHCLONE_ROOT"/.buildozer/.gradle:/home/user/.gradle \
     $DOCKER_RUN_FLAGS \
     --workdir /home/user/wspace/electrum \
-    electrum-android-builder-img bash \
-#    ./contrib/android/make_apk "$@"
+    electrum-android-builder-img \
+    ./contrib/android/make_apk "$@"
 
 # make sure resulting binary location is independent of fresh_clone
 if [ ! -z "$ELECBUILD_COMMIT" ] ; then

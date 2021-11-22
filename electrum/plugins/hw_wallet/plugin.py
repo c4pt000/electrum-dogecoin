@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- mode: python -*-
 #
-# Electrum - lightweight Bitcoin client
+# Electrum - lightweight Radiocoin client
 # Copyright (C) 2016  The Electrum developers
 #
 # Permission is hereby granted, free of charge, to any person
@@ -24,10 +24,11 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import TYPE_CHECKING, Dict, List, Union, Tuple, Sequence, Optional, Type
+from typing import TYPE_CHECKING, Dict, List, Union, Tuple, Sequence, Optional, Type, Iterable, Any
 from functools import partial
 
-from electrum.plugin import BasePlugin, hook, Device, DeviceMgr, DeviceInfo
+from electrum.plugin import (BasePlugin, hook, Device, DeviceMgr, DeviceInfo,
+                             assert_runs_in_hwd_thread, runs_in_hwd_thread)
 from electrum.i18n import _
 from electrum.bitcoin import is_address, opcodes
 from electrum.util import bfh, versiontuple, UserFacingException
@@ -47,8 +48,10 @@ class HW_PluginBase(BasePlugin):
     libraries_available: bool
 
     # define supported library versions:  minimum_library <= x < maximum_library
-    minimum_library = (0, )
-    maximum_library = (float('inf'), )
+    minimum_library = (0,)
+    maximum_library = (float('inf'),)
+
+    DEVICE_IDS: Iterable[Any]
 
     def __init__(self, parent, config, name):
         BasePlugin.__init__(self, parent, config, name)
@@ -62,7 +65,7 @@ class HW_PluginBase(BasePlugin):
     def device_manager(self) -> 'DeviceMgr':
         return self.parent.device_manager
 
-    def create_device_from_hid_enumeration(self, d: dict, *, product_key) -> 'Device':
+    def create_device_from_hid_enumeration(self, d: dict, *, product_key) -> Optional['Device']:
         # Older versions of hid don't provide interface_number
         interface_number = d.get('interface_number', -1)
         usage_page = d['usage_page']
@@ -122,7 +125,7 @@ class HW_PluginBase(BasePlugin):
         if keystore is None:
             keystore = wallet.get_keystore()
         if not is_address(address):
-            keystore.handler.show_error(_('Invalid Namecoin Address'))
+            keystore.handler.show_error(_('Invalid Radiocoin Address'))
             return False
         if not wallet.is_mine(address):
             keystore.handler.show_error(_('Address not in wallet.'))
@@ -191,12 +194,19 @@ class HW_PluginBase(BasePlugin):
         # note: in Qt GUI, 'window' is either an ElectrumWindow or an InstallWizard
         raise NotImplementedError()
 
+    def can_recognize_device(self, device: Device) -> bool:
+        """Whether the plugin thinks it can handle the given device.
+        Used for filtering all connected hardware devices to only those by this vendor.
+        """
+        return device.product_key in self.DEVICE_IDS
+
 
 class HardwareClientBase:
 
     handler = None  # type: Optional['HardwareHandlerBase']
 
     def __init__(self, *, plugin: 'HW_PluginBase'):
+        assert_runs_in_hwd_thread()
         self.plugin = plugin
 
     def device_manager(self) -> 'DeviceMgr':
@@ -242,6 +252,7 @@ class HardwareClientBase:
     def get_xpub(self, bip32_path: str, xtype) -> str:
         raise NotImplementedError()
 
+    @runs_in_hwd_thread
     def request_root_fingerprint_from_device(self) -> str:
         # digitalbitbox (at least) does not reveal xpubs corresponding to unhardened paths
         # so ask for a direct child, and read out fingerprint from that:
@@ -249,6 +260,7 @@ class HardwareClientBase:
         root_fingerprint = BIP32Node.from_xkey(child_of_root_xpub).fingerprint.hex().lower()
         return root_fingerprint
 
+    @runs_in_hwd_thread
     def get_password_for_storage_encryption(self) -> str:
         # note: using a different password based on hw device type is highly undesirable! see #5993
         derivation = get_derivation_used_for_hw_device_encryption()
@@ -261,6 +273,13 @@ class HardwareClientBase:
         E.g. for Trezor, "Trezor One" or "Trezor T".
         """
         return None
+
+    def manipulate_keystore_dict_during_wizard_setup(self, d: dict) -> None:
+        """Called during wallet creation in the wizard, before the keystore
+        is constructed for the first time. 'd' is the dict that will be
+        passed to the keystore constructor.
+        """
+        pass
 
 
 class HardwareHandlerBase:

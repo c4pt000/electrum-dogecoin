@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Electrum - lightweight Bitcoin client
+# Electrum - lightweight Radiocoin client
 # Copyright (C) 2012 thomasv@gitorious
 #
 # Permission is hereby granted, free of charge, to any person
@@ -27,6 +27,7 @@ import socket
 import time
 from enum import IntEnum
 from typing import Tuple, TYPE_CHECKING
+import threading
 
 from PyQt5.QtCore import Qt, pyqtSignal, QThread
 from PyQt5.QtWidgets import (QTreeWidget, QTreeWidgetItem, QMenu, QGridLayout, QComboBox,
@@ -53,7 +54,7 @@ protocol_names = ['TCP', 'SSL']
 protocol_letters = 'ts'
 
 class NetworkDialog(QDialog):
-    def __init__(self, network, config, network_updated_signal_obj):
+    def __init__(self, *, network: Network, config: 'SimpleConfig', network_updated_signal_obj):
         QDialog.__init__(self)
         self.setWindowTitle(_('Network'))
         self.setMinimumSize(500, 500)
@@ -65,13 +66,23 @@ class NetworkDialog(QDialog):
         self.network_updated_signal_obj.network_updated_signal.connect(
             self.on_update)
         util.register_callback(self.on_network, ['network_updated'])
+        self._cleaned_up = False
 
     def on_network(self, event, *args):
-        self.network_updated_signal_obj.network_updated_signal.emit(event, args)
+        signal_obj = self.network_updated_signal_obj
+        if signal_obj:
+            signal_obj.network_updated_signal.emit(event, args)
 
     def on_update(self):
         self.nlayout.update()
 
+    def clean_up(self):
+        if self._cleaned_up:
+            return
+        self._cleaned_up = True
+        self.nlayout.clean_up()
+        self.network_updated_signal_obj.network_updated_signal.disconnect()
+        self.network_updated_signal_obj = None
 
 
 class NodesListWidget(QTreeWidget):
@@ -117,7 +128,7 @@ class NodesListWidget(QTreeWidget):
         menu.exec_(self.viewport().mapToGlobal(position))
 
     def keyPressEvent(self, event):
-        if event.key() in [ Qt.Key_F2, Qt.Key_Return ]:
+        if event.key() in [Qt.Key_F2, Qt.Key_Return, Qt.Key_Enter]:
             self.on_activated(self.currentItem(), self.currentColumn())
         else:
             QTreeWidget.keyPressEvent(self, event)
@@ -148,7 +159,7 @@ class NodesListWidget(QTreeWidget):
                 x = connected_servers_item
             for i in interfaces:
                 star = ' *' if i == network.interface else ''
-                item = QTreeWidgetItem([f"{i.server.net_addr_str()}" + star, '%d'%i.tip])
+                item = QTreeWidgetItem([f"{i.server.to_friendly_name()}" + star, '%d'%i.tip])
                 item.setData(0, self.ITEMTYPE_ROLE, self.ItemType.CONNECTED_SERVER)
                 item.setData(0, self.SERVER_ADDR_ROLE, i.server)
                 item.setToolTip(0, str(i.server))
@@ -247,7 +258,7 @@ class NetworkChoiceLayout(object):
 
         grid.addWidget(self.tor_cb, 1, 0, 1, 3)
         grid.addWidget(self.proxy_cb, 2, 0, 1, 3)
-        grid.addWidget(HelpButton(_('Proxy settings apply to all connections: with Electrum-DOGE servers, but also with third-party services.')), 2, 4)
+        grid.addWidget(HelpButton(_('Proxy settings apply to all connections: with Electrum servers, but also with third-party services.')), 2, 4)
         grid.addWidget(self.proxy_mode, 4, 1)
         grid.addWidget(self.proxy_host, 4, 2)
         grid.addWidget(self.proxy_port, 4, 3)
@@ -258,7 +269,7 @@ class NetworkChoiceLayout(object):
         # Blockchain Tab
         grid = QGridLayout(blockchain_tab)
         msg =  ' '.join([
-            _("Electrum-DOGE connects to several nodes in order to download block headers and find out the longest blockchain."),
+            _("Electrum connects to several nodes in order to download block headers and find out the longest blockchain."),
             _("This blockchain is used to verify the transactions sent by your transaction server.")
         ])
         self.status_label = QLabel('')
@@ -271,8 +282,8 @@ class NetworkChoiceLayout(object):
         self.autoconnect_cb.clicked.connect(self.set_server)
         self.autoconnect_cb.clicked.connect(self.update)
         msg = ' '.join([
-            _("If auto-connect is enabled, Electrum-DOGE will always use a server that is on the longest blockchain."),
-            _("If it is disabled, you have to choose a server you want to use. Electrum-DOGE will warn you if your server is lagging.")
+            _("If auto-connect is enabled, Electrum will always use a server that is on the longest blockchain."),
+            _("If it is disabled, you have to choose a server you want to use. Electrum will warn you if your server is lagging.")
         ])
         grid.addWidget(self.autoconnect_cb, 1, 0, 1, 3)
         grid.addWidget(HelpButton(msg), 1, 4)
@@ -280,7 +291,7 @@ class NetworkChoiceLayout(object):
         self.server_e = QLineEdit()
         self.server_e.setFixedWidth(fixed_width_hostname + fixed_width_port)
         self.server_e.editingFinished.connect(self.set_server)
-        msg = _("Electrum-DOGE sends your wallet addresses to a single server, in order to receive your transaction history.")
+        msg = _("Electrum sends your wallet addresses to a single server, in order to receive your transaction history.")
         grid.addWidget(QLabel(_('Server') + ':'), 2, 0)
         grid.addWidget(self.server_e, 2, 1, 1, 3)
         grid.addWidget(HelpButton(msg), 2, 4)
@@ -308,6 +319,12 @@ class NetworkChoiceLayout(object):
         self.fill_in_proxy_settings()
         self.update()
 
+    def clean_up(self):
+        if self.td:
+            self.td.found_proxy.disconnect()
+            self.td.stop()
+            self.td = None
+
     def check_disable_proxy(self, b):
         if not self.config.is_modifiable('proxy'):
             b = False
@@ -327,7 +344,7 @@ class NetworkChoiceLayout(object):
         server = net_params.server
         auto_connect = net_params.auto_connect
         if not self.server_e.hasFocus():
-            self.server_e.setText(server.net_addr_str())
+            self.server_e.setText(server.to_friendly_name())
         self.autoconnect_cb.setChecked(auto_connect)
 
         height_str = "%d "%(self.network.get_local_height()) + _('blocks')
@@ -396,11 +413,11 @@ class NetworkChoiceLayout(object):
     def set_proxy(self):
         net_params = self.network.get_parameters()
         if self.proxy_cb.isChecked():
-            proxy = { 'mode':str(self.proxy_mode.currentText()).lower(),
-                      'host':str(self.proxy_host.text()),
-                      'port':str(self.proxy_port.text()),
-                      'user':str(self.proxy_user.text()),
-                      'password':str(self.proxy_password.text())}
+            proxy = {'mode':str(self.proxy_mode.currentText()).lower(),
+                     'host':str(self.proxy_host.text()),
+                     'port':str(self.proxy_port.text()),
+                     'user':str(self.proxy_user.text()),
+                     'password':str(self.proxy_password.text())}
         else:
             proxy = None
             self.tor_cb.setChecked(False)
@@ -447,6 +464,7 @@ class TorDetector(QThread):
 
     def __init__(self):
         QThread.__init__(self)
+        self._stop_event = threading.Event()
 
     def run(self):
         # Probable ports for Tor to listen at
@@ -459,18 +477,25 @@ class TorDetector(QThread):
                     break
             else:
                 self.found_proxy.emit(None)
-            time.sleep(10)
+            stopping = self._stop_event.wait(10)
+            if stopping:
+                return
+
+    def stop(self):
+        self._stop_event.set()
+        self.exit()
+        self.wait()
 
     @staticmethod
     def is_tor_port(net_addr: Tuple[str, int]) -> bool:
         try:
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.settimeout(0.1)
-            s.connect(net_addr)
-            # Tor responds uniquely to HTTP-like requests
-            s.send(b"GET\n")
-            if b"Tor is not an HTTP Proxy" in s.recv(1024):
-                return True
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.settimeout(0.1)
+                s.connect(net_addr)
+                # Tor responds uniquely to HTTP-like requests
+                s.send(b"GET\n")
+                if b"Tor is not an HTTP Proxy" in s.recv(1024):
+                    return True
         except socket.error:
             pass
         return False

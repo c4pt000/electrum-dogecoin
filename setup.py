@@ -17,7 +17,7 @@ _min_python_version_tuple = tuple(map(int, (MIN_PYTHON_VERSION.split("."))))
 
 
 if sys.version_info[:3] < _min_python_version_tuple:
-    sys.exit("Error: Electrum-DOGE requires Python version >= %s..." % MIN_PYTHON_VERSION)
+    sys.exit("Error: Electrum requires Python version >= %s..." % MIN_PYTHON_VERSION)
 
 with open('contrib/requirements/requirements.txt') as f:
     requirements = f.read().splitlines()
@@ -47,7 +47,7 @@ if platform.system() in ['Linux', 'FreeBSD', 'DragonFly']:
             usr_share = os.path.expanduser('~/.local/share')
     data_files += [
         (os.path.join(usr_share, 'applications/'), ['electrum-doge.desktop']),
-        (os.path.join(usr_share, icons_dirname), ['electrum/gui/icons/electrum_nmc.png']),
+        (os.path.join(usr_share, icons_dirname), ['electrum/gui/icons/electrum.png']),
     ]
 
 extras_require = {
@@ -72,31 +72,26 @@ setup(
     extras_require=extras_require,
     packages=[
         'electrum',
+        'electrum.qrreader',
         'electrum.gui',
         'electrum.gui.qt',
-        'electrum.gui.qt.forms',
+        'electrum.gui.qt.qrreader',
+        'electrum.gui.qt.qrreader.qtmultimedia',
         'electrum.plugins',
     ] + [('electrum.plugins.'+pkg) for pkg in find_packages('electrum/plugins')],
     package_dir={
-        'electrum': 'electrum',
+        'electrum': 'electrum'
     },
-    package_data={
-        '': ['*.txt', '*.json', '*.ttf', '*.otf', '*.csv'],
-        'electrum': [
-            'wordlist/*.txt',
-            'locale/*/LC_MESSAGES/electrum.mo',
-            'lnwire/*.csv',
-        ],
-        'electrum.gui': [
-            'icons/*',
-        ],
-    },
-    scripts=['electrum/electrum-doge'],
+    # Note: MANIFEST.in lists what gets included in the tar.gz, and the
+    # package_data kwarg lists what gets put in site-packages when pip installing the tar.gz.
+    # By specifying include_package_data=True, MANIFEST.in becomes responsible for both.
+    include_package_data=True,
+    scripts=['electrum/electrum'],
     data_files=data_files,
-    description="Lightweight Dogecoin Wallet",
-    author="The Dogecoin developers; based on Electrum by Thomas Voegtlin and Electrum-DOGE by The Electrum-DOGE contributors",
-    author_email="jeremy@Dogecoin.org",
-    license="GNU GPLv3+ for Electrum-DOGE components; MIT Licence for all other components",
-    url="https://www.Dogecoin.org/",
-    long_description="""Lightweight Dogecoin Wallet""",
+    description="Lightweight Radiocoin Wallet",
+    author="Thomas Voegtlin",
+    author_email="thomasv@electrum.org",
+    license="MIT Licence",
+    url="https://electrum.org",
+    long_description="""Lightweight Radiocoin Wallet""",
 )

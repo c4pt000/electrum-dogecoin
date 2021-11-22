@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Electrum - lightweight Bitcoin client
+# Electrum - lightweight Radiocoin client
 # Copyright (C) 2018 The Electrum developers
 #
 # Permission is hereby granted, free of charge, to any person
@@ -30,8 +30,12 @@ import hashlib
 import hmac
 from typing import Union
 
-from .util import assert_bytes, InvalidPassword, to_bytes, to_string, WalletFileException
+from .util import assert_bytes, InvalidPassword, to_bytes, to_string, WalletFileException, versiontuple
 from .i18n import _
+from .logging import get_logger
+
+
+_logger = get_logger(__name__)
 
 
 HAS_PYAES = False
@@ -43,32 +47,33 @@ else:
     HAS_PYAES = True
 
 HAS_CRYPTODOME = False
+MIN_CRYPTODOME_VERSION = "3.7"
 try:
+    import Cryptodome
+    if versiontuple(Cryptodome.__version__) < versiontuple(MIN_CRYPTODOME_VERSION):
+        _logger.warning(f"found module 'Cryptodome' but it is too old: {Cryptodome.__version__}<{MIN_CRYPTODOME_VERSION}")
+        raise Exception()
     from Cryptodome.Cipher import ChaCha20_Poly1305 as CD_ChaCha20_Poly1305
     from Cryptodome.Cipher import ChaCha20 as CD_ChaCha20
     from Cryptodome.Cipher import AES as CD_AES
-
-    # HKDF for Namecoin deterministic salts
-    from Cryptodome.Protocol.KDF import HKDF as CD_HKDF
-    from Cryptodome.Hash import SHA256 as CD_SHA256
 except:
     pass
 else:
     HAS_CRYPTODOME = True
 
 HAS_CRYPTOGRAPHY = False
+MIN_CRYPTOGRAPHY_VERSION = "2.1"
 try:
     import cryptography
+    if versiontuple(cryptography.__version__) < versiontuple(MIN_CRYPTOGRAPHY_VERSION):
+        _logger.warning(f"found module 'cryptography' but it is too old: {cryptography.__version__}<{MIN_CRYPTOGRAPHY_VERSION}")
+        raise Exception()
     from cryptography import exceptions
     from cryptography.hazmat.primitives.ciphers import Cipher as CG_Cipher
     from cryptography.hazmat.primitives.ciphers import algorithms as CG_algorithms
     from cryptography.hazmat.primitives.ciphers import modes as CG_modes
     from cryptography.hazmat.backends import default_backend as CG_default_backend
     import cryptography.hazmat.primitives.ciphers.aead as CG_aead
-
-    # HKDF for Namecoin deterministic salts
-    from cryptography.hazmat.primitives.kdf.hkdf import HKDF as CG_HKDF
-    from cryptography.hazmat.primitives.hashes import SHA256 as CG_SHA256
 except:
     pass
 else:
@@ -167,8 +172,8 @@ def DecodeAES_bytes(secret: bytes, ciphertext: bytes) -> bytes:
 
 
 PW_HASH_VERSION_LATEST = 1
-KNOWN_PW_HASH_VERSIONS = (1, 2, )
-SUPPORTED_PW_HASH_VERSIONS = (1, )
+KNOWN_PW_HASH_VERSIONS = (1, 2,)
+SUPPORTED_PW_HASH_VERSIONS = (1,)
 assert PW_HASH_VERSION_LATEST in KNOWN_PW_HASH_VERSIONS
 assert PW_HASH_VERSION_LATEST in SUPPORTED_PW_HASH_VERSIONS
 
@@ -181,7 +186,7 @@ class UnexpectedPasswordHashVersion(InvalidPassword, WalletFileException):
         return "{unexpected}: {version}\n{instruction}".format(
             unexpected=_("Unexpected password hash version"),
             version=self.version,
-            instruction=_('You are most likely using an outdated version of Electrum-DOGE. Please update.'))
+            instruction=_('You are most likely using an outdated version of Electrum. Please update.'))
 
 
 class UnsupportedPasswordHashVersion(InvalidPassword, WalletFileException):
@@ -310,6 +315,10 @@ def ripemd(x):
         md.update(x)
         return md.digest()
     except BaseException:
+        # ripemd160 is not guaranteed to be available in hashlib on all platforms.
+        # Historically, our Android builds had hashlib/openssl which did not have it.
+        # see https://github.com/spesmilo/electrum/issues/7093
+        # We bundle a pure python implementation as fallback that gets used now:
         from . import ripemd
         md = ripemd.new(x)
         return md.digest()
@@ -333,6 +342,8 @@ def chacha20_poly1305_encrypt(
     assert isinstance(nonce, (bytes, bytearray))
     assert isinstance(associated_data, (bytes, bytearray, type(None)))
     assert isinstance(data, (bytes, bytearray))
+    assert len(key) == 32, f"unexpected key size: {len(key)} (expected: 32)"
+    assert len(nonce) == 12, f"unexpected nonce size: {len(nonce)} (expected: 12)"
     if HAS_CRYPTODOME:
         cipher = CD_ChaCha20_Poly1305.new(key=key, nonce=nonce)
         if associated_data is not None:
@@ -356,6 +367,8 @@ def chacha20_poly1305_decrypt(
     assert isinstance(nonce, (bytes, bytearray))
     assert isinstance(associated_data, (bytes, bytearray, type(None)))
     assert isinstance(data, (bytes, bytearray))
+    assert len(key) == 32, f"unexpected key size: {len(key)} (expected: 32)"
+    assert len(nonce) == 12, f"unexpected nonce size: {len(nonce)} (expected: 12)"
     if HAS_CRYPTODOME:
         cipher = CD_ChaCha20_Poly1305.new(key=key, nonce=nonce)
         if associated_data is not None:
@@ -375,12 +388,13 @@ def chacha20_encrypt(*, key: bytes, nonce: bytes, data: bytes) -> bytes:
     assert isinstance(key, (bytes, bytearray))
     assert isinstance(nonce, (bytes, bytearray))
     assert isinstance(data, (bytes, bytearray))
-    assert len(nonce) == 8, f"unexpected nonce size: {len(nonce)} (expected: 8)"
+    assert len(key) == 32, f"unexpected key size: {len(key)} (expected: 32)"
+    assert len(nonce) in (8, 12), f"unexpected nonce size: {len(nonce)} (expected: 8 or 12)"
     if HAS_CRYPTODOME:
         cipher = CD_ChaCha20.new(key=key, nonce=nonce)
         return cipher.encrypt(data)
     if HAS_CRYPTOGRAPHY:
-        nonce = bytes(8) + nonce  # cryptography wants 16 byte nonces
+        nonce = bytes(16 - len(nonce)) + nonce  # cryptography wants 16 byte nonces
         algo = CG_algorithms.ChaCha20(key=key, nonce=nonce)
         cipher = CG_Cipher(algo, mode=None, backend=CG_default_backend())
         encryptor = cipher.encryptor()
@@ -388,14 +402,19 @@ def chacha20_encrypt(*, key: bytes, nonce: bytes, data: bytes) -> bytes:
     raise Exception("no chacha20 backend found")
 
 
-def hkdf_sha256_32(ikm: bytes, salt: bytes, info: bytes) -> bytes:
+def chacha20_decrypt(*, key: bytes, nonce: bytes, data: bytes) -> bytes:
+    assert isinstance(key, (bytes, bytearray))
+    assert isinstance(nonce, (bytes, bytearray))
+    assert isinstance(data, (bytes, bytearray))
+    assert len(key) == 32, f"unexpected key size: {len(key)} (expected: 32)"
+    assert len(nonce) in (8, 12), f"unexpected nonce size: {len(nonce)} (expected: 8 or 12)"
     if HAS_CRYPTODOME:
-        return CD_HKDF(ikm, 32, salt, CD_SHA256, context=info)
+        cipher = CD_ChaCha20.new(key=key, nonce=nonce)
+        return cipher.decrypt(data)
     if HAS_CRYPTOGRAPHY:
-        return CG_HKDF(algorithm=CG_SHA256(), length=32, salt=salt, info=info, backend=CG_default_backend()).derive(ikm)
-    raise Exception("no hkdf backend found")
-
-
-# 20-byte truncated version of hkdf_sha256_32
-def hkdf_sha256_32_20(ikm: bytes, salt: bytes, info: bytes) -> bytes:
-    return hkdf_sha256_32(ikm, salt, info)[:20]
+        nonce = bytes(16 - len(nonce)) + nonce  # cryptography wants 16 byte nonces
+        algo = CG_algorithms.ChaCha20(key=key, nonce=nonce)
+        cipher = CG_Cipher(algo, mode=None, backend=CG_default_backend())
+        decryptor = cipher.decryptor()
+        return decryptor.update(data)
+    raise Exception("no chacha20 backend found")

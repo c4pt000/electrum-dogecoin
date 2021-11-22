@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Electrum - lightweight Bitcoin client
+# Electrum - lightweight Radiocoin client
 # Copyright (C) 2018 The Electrum developers
 #
 # Permission is hereby granted, free of charge, to any person
@@ -26,7 +26,7 @@
 import os
 import json
 
-from .util import inv_dict
+from .util import inv_dict, all_subclasses
 from . import bitcoin
 
 
@@ -40,34 +40,39 @@ def read_json(filename, default):
     return r
 
 
-GIT_REPO_URL = "https://github.com/namecoin/electrum-doge"
-GIT_REPO_ISSUES_URL = "https://github.com/namecoin/electrum-doge/issues"
+GIT_REPO_URL = "https://github.com/spesmilo/electrum"
+GIT_REPO_ISSUES_URL = "https://github.com/spesmilo/electrum/issues"
+BIP39_WALLET_FORMATS = read_json('bip39_wallet_formats.json', [])
 
 
 class AbstractNet:
 
-    BLOCK_HEIGHT_FIRST_LIGHTNING_CHANNELS = 100
+    NET_NAME: str
+    TESTNET: bool
+    WIF_PREFIX: int
+    ADDRTYPE_P2PKH: int
+    ADDRTYPE_P2SH: int
+    SEGWIT_HRP: str
+  #  BOLT11_HRP: str
+    GENESIS: str
+    BLOCK_HEIGHT_FIRST_LIGHTNING_CHANNELS: int = 0
+    BIP44_COIN_TYPE: int
+    LN_REALM_BYTE: int
 
     @classmethod
     def max_checkpoint(cls) -> int:
-        # Namecoin: We can't actually fully use the last checkpoint, because
-        # verifying the chunk following the last checkpoint requires having the
-        # chunk for the last checkpoint, because of the timewarp hardfork.  So
-        # we artificially return one fewer checkpoint than is available.
-        #
-        # It should be noted that this hack causes Electrum-DOGE to need at
-        # least 2 checkpoints, whereas upstream Electrum only needs 1.
-        #return max(0, len(cls.CHECKPOINTS) * 2016 - 1)
-        return max(0, (len(cls.CHECKPOINTS)-1) * 2016 - 1)
+        return max(0, len(cls.CHECKPOINTS) * 2016 - 1)
 
     @classmethod
     def rev_genesis_bytes(cls) -> bytes:
         return bytes.fromhex(bitcoin.rev_hex(cls.GENESIS))
 
 
+
 class BitcoinMainnet(AbstractNet):
 
     TESTNET = False
+
     WIF_PREFIX = 158
     ADDRTYPE_P2PKH = 30
     ADDRTYPE_P2SH = 22
@@ -115,6 +120,7 @@ class BitcoinMainnet(AbstractNet):
     AUXPOW_START_HEIGHT = 0
 
     NAME_EXPIRATION = 60
+
 
 
 class BitcoinTestnet(AbstractNet):
@@ -178,8 +184,14 @@ class BitcoinSimnet(BitcoinTestnet):
     LN_DNS_SEEDS = []
 
 
+NETS_LIST = tuple(all_subclasses(AbstractNet))
+
 # don't import net directly, import the module instead (so that net is singleton)
 net = BitcoinMainnet
+
+def set_signet():
+    global net
+    net = BitcoinSignet
 
 def set_simnet():
     global net
@@ -192,7 +204,6 @@ def set_mainnet():
 def set_testnet():
     global net
     net = BitcoinTestnet
-
 
 def set_regtest():
     global net

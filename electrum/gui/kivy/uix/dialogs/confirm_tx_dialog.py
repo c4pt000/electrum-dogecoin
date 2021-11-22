@@ -15,7 +15,7 @@ from electrum.gui.kivy.i18n import _
 from electrum.plugin import run_hook
 from electrum.util import NotEnoughFunds
 
-from .fee_dialog import FeeSliderDialog
+#from .fee_dialog import FeeSliderDialog
 
 if TYPE_CHECKING:
     from electrum.gui.kivy.main_window import ElectrumWindow
@@ -66,25 +66,6 @@ Builder.load_string('''
                 text: ''
         BoxLayout:
             orientation: 'horizontal'
-            size_hint: 1, 0.5
-            Label:
-                text: _('Target') + ' (%s):' % (_('mempool') if root.method == 2 else _('ETA') if root.method == 1 else _('static'))
-            Button:
-                id: fee_button
-                text: ''
-                background_color: (0,0,0,0)
-                bold: True
-                on_release:
-                    root.method  = (root.method + 1) % 3
-                    root.update_slider()
-                    root.on_slider(root.slider.value)
-        Slider:
-            id: slider
-            range: 0, 4
-            step: 1
-            on_value: root.on_slider(self.value)
-        BoxLayout:
-            orientation: 'horizontal'
             size_hint: 1, 0.2
             Label:
                 text: _('Final')
@@ -120,19 +101,19 @@ Builder.load_string('''
 
 
 
-class ConfirmTxDialog(FeeSliderDialog, Factory.Popup):
+class ConfirmTxDialog(Factory.Popup):
 
     def __init__(self, app: 'ElectrumWindow', amount, make_tx, on_pay, *, show_final=True):
 
         Factory.Popup.__init__(self)
-        FeeSliderDialog.__init__(self, app.electrum_config, self.ids.slider)
+   #     FeeSliderDialog.__init__(self, app.electrum_config, self.ids.slider)
         self.app = app
         self.amount = amount
         self.make_tx = make_tx
         self.on_pay = on_pay
         self.show_final = show_final
-        self.update_slider()
-        self.update_text()
+       # self.update_slider()
+    #    self.update_text()
         self.update_tx()
 
     def update_tx(self):
@@ -155,7 +136,7 @@ class ConfirmTxDialog(FeeSliderDialog, Factory.Popup):
         fee = tx.get_fee()
         self.ids.fee_label.text = self.app.format_amount_and_units(fee)
         feerate = Decimal(fee) / tx_size  # sat/byte
-        self.ids.feerate_label.text = f'{feerate:.1f} sat/B'
+        self.ids.feerate_label.text = f'{feerate:.1f} radiowaves/B'
         self.ids.amount_label.text = self.app.format_amount_and_units(amount)
         x_fee = run_hook('get_tx_extra_fee', self.app.wallet, tx)
         if x_fee:
@@ -172,11 +153,11 @@ class ConfirmTxDialog(FeeSliderDialog, Factory.Popup):
             self.warning = ''
         self.tx = tx
 
-    def on_slider(self, value):
-        self.save_config()
-        self.update_text()
-        Clock.schedule_once(lambda dt: self.update_tx())
+  #  def on_slider(self, value):
+   #     self.save_config()
+    #    self.update_text()
+     #   Clock.schedule_once(lambda dt: self.update_tx())
 
-    def update_text(self):
-        target, tooltip, dyn = self.config.get_fee_target()
-        self.ids.fee_button.text = target
+ #   def update_text(self):
+#        target, tooltip, dyn = self.config.get_fee_target()
+#        self.ids.fee_button.text = target

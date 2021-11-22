@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Electrum - Lightweight Bitcoin Client
+# Electrum - Lightweight Radiocoin Client
 # Copyright (C) 2015 Thomas Voegtlin
 #
 # Permission is hereby granted, free of charge, to any person
@@ -43,7 +43,7 @@ from PyQt5.QtWidgets import (QVBoxLayout, QLabel, QGridLayout, QLineEdit,
                              QInputDialog)
 
 from electrum.gui.qt.util import (EnterButton, Buttons, CloseButton, OkButton,
-                                  WindowModalDialog, get_parent_main_window)
+                                  WindowModalDialog)
 from electrum.gui.qt.main_window import ElectrumWindow
 
 from electrum.plugin import BasePlugin, hook
@@ -85,7 +85,7 @@ class Processor(threading.Thread, Logger):
                 p = [p]
                 continue
             for item in p:
-                if item.get_content_type() == "application/namecoin-paymentrequest":
+                if item.get_content_type() == "application/bitcoin-paymentrequest":
                     pr_str = item.get_payload()
                     pr_str = base64.b64decode(pr_str)
                     self.on_receive(pr_str)
@@ -115,10 +115,10 @@ class Processor(threading.Thread, Logger):
         msg['Subject'] = message
         msg['To'] = recipient
         msg['From'] = self.username
-        part = MIMEBase('application', "namecoin-paymentrequest")
+        part = MIMEBase('application', "bitcoin-paymentrequest")
         part.set_payload(payment_request)
         encode_base64(part)
-        part.add_header('Content-Disposition', 'attachment; filename="payreq.nmc"')
+        part.add_header('Content-Disposition', 'attachment; filename="payreq.btc"')
         msg.attach(part)
         try:
             s = smtplib.SMTP_SSL(self.imap_server, timeout=2)
@@ -176,8 +176,7 @@ class Plugin(BasePlugin):
         #main_window.invoice_list.update()
 
     @hook
-    def receive_list_menu(self, menu, addr):
-        window = get_parent_main_window(menu)
+    def receive_list_menu(self, window: ElectrumWindow, menu, addr):
         menu.addAction(_("Send via e-mail"), lambda: self.send(window, addr))
 
     def send(self, window: ElectrumWindow, addr):

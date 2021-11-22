@@ -53,11 +53,9 @@ if [[ -n "$1"  && "$1" == "release" ]] ; then
 elif [[ -n "$1"  && "$1" == "release-unsigned" ]] ; then
     # do release build, but do not sign the APKs.
     # build two apks
-    export APP_ANDROID_ARCH=armeabi-v7a
-    make release
+#    export APP_ANDROID_ARCH=armeabi-v7a
+ #   make release
     export APP_ANDROID_ARCH=arm64-v8a
-    make release
-    export APP_ANDROID_ARCH=x86_64
     make release
 else
     # do debug build; the default.
@@ -76,8 +74,8 @@ else
     # only build one apk for debug build, for faster testing iterations
     export APP_ANDROID_ARCH=arm64-v8a
     make apk
-    # export APP_ANDROID_ARCH=armeabi-v7a
-    # make apk
+ #    export APP_ANDROID_ARCH=armeabi-v7a
+ #    make apk
 fi
 
 popd

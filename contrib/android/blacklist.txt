@@ -99,9 +99,10 @@ lib-dynload/pyexpat.so
 # odd files
 plat-linux3/regen
 
-#>sqlite3
+>sqlite3
 # conditionnal include depending if some recipes are included or not.
-#sqlite3/*
-#lib-dynload/_sqlite3.so
+sqlite3/*
+lib-dynload/_sqlite3.so
+
 #<sqlite3
 

@@ -12,24 +12,28 @@ from functools import partial, lru_cache
 from typing import (NamedTuple, Callable, Optional, TYPE_CHECKING, Union, List, Dict, Any,
                     Sequence, Iterable)
 
-from PyQt5.QtGui import (QFont, QColor, QCursor, QPixmap, QStandardItem,
-                         QPalette, QIcon, QFontMetrics, QShowEvent)
+from PyQt5.QtGui import (QFont, QColor, QCursor, QPixmap, QStandardItem, QImage,
+                         QPalette, QIcon, QFontMetrics, QShowEvent, QPainter, QHelpEvent)
 from PyQt5.QtCore import (Qt, QPersistentModelIndex, QModelIndex, pyqtSignal,
                           QCoreApplication, QItemSelectionModel, QThread,
-                          QSortFilterProxyModel, QSize, QLocale, QAbstractItemModel)
+                          QSortFilterProxyModel, QSize, QLocale, QAbstractItemModel,
+                          QEvent, QRect, QPoint, QObject)
 from PyQt5.QtWidgets import (QPushButton, QLabel, QMessageBox, QHBoxLayout,
                              QAbstractItemView, QVBoxLayout, QLineEdit,
                              QStyle, QDialog, QGroupBox, QButtonGroup, QRadioButton,
                              QFileDialog, QWidget, QToolButton, QTreeView, QPlainTextEdit,
                              QHeaderView, QApplication, QToolTip, QTreeWidget, QStyledItemDelegate,
-                             QMenu)
+                             QMenu, QStyleOptionViewItem, QLayout, QLayoutItem,
+                             QGraphicsEffect, QGraphicsScene, QGraphicsPixmapItem)
 
 from electrum.i18n import _, languages
 from electrum.util import FileImportFailed, FileExportFailed, make_aiohttp_session, resource_path
-from electrum.invoices import PR_UNPAID, PR_PAID, PR_EXPIRED, PR_INFLIGHT, PR_UNKNOWN, PR_FAILED, PR_ROUTING
+from electrum.invoices import PR_UNPAID, PR_PAID, PR_EXPIRED, PR_INFLIGHT, PR_UNKNOWN, PR_FAILED, PR_ROUTING, PR_UNCONFIRMED
 
 if TYPE_CHECKING:
     from .main_window import ElectrumWindow
+    from .installwizard import InstallWizard
+    from electrum.simple_config import SimpleConfig
 
 
 if platform.system() == 'Windows':
@@ -50,6 +54,7 @@ pr_icons = {
     PR_INFLIGHT:"unconfirmed.png",
     PR_FAILED:"warning.png",
     PR_ROUTING:"unconfirmed.png",
+    PR_UNCONFIRMED:"unconfirmed.png",
 }
 
 
@@ -69,7 +74,7 @@ class EnterButton(QPushButton):
         self.clicked.connect(func)
 
     def keyPressEvent(self, e):
-        if e.key() == Qt.Key_Return:
+        if e.key() in [Qt.Key_Return, Qt.Key_Enter]:
             self.func()
 
 
@@ -125,9 +130,10 @@ class HelpLabel(QLabel):
         return QLabel.leaveEvent(self, event)
 
 
-class HelpButton(QPushButton):
+class HelpButton(QToolButton):
     def __init__(self, text):
-        QPushButton.__init__(self, '?')
+        QToolButton.__init__(self)
+        self.setText('?')
         self.help_text = text
         self.setFocusPolicy(Qt.NoFocus)
         self.setFixedWidth(round(2.2 * char_width_in_lineedit()))
@@ -329,9 +335,14 @@ class BlockingWaitingDialog(WindowModalDialog):
         self.message_label = QLabel(message)
         vbox = QVBoxLayout(self)
         vbox.addWidget(self.message_label)
+        # show popup
         self.show()
+        # refresh GUI; needed for popup to appear and for message_label to get drawn
         QCoreApplication.processEvents()
+        QCoreApplication.processEvents()
+        # block and run given task
         task()
+        # close popup
         self.accept()
 
 
@@ -349,7 +360,16 @@ def line_dialog(parent, title, label, ok_label, default=None):
     if dialog.exec_():
         return txt.text()
 
-def text_dialog(parent, title, header_layout, ok_label, default=None, allow_multi=False):
+def text_dialog(
+        *,
+        parent,
+        title,
+        header_layout,
+        ok_label,
+        default=None,
+        allow_multi=False,
+        config: 'SimpleConfig',
+):
     from .qrtextedit import ScanQRTextEdit
     dialog = WindowModalDialog(parent, title)
     dialog.setMinimumWidth(600)
@@ -359,7 +379,7 @@ def text_dialog(parent, title, header_layout, ok_label, default=None, allow_mult
         l.addWidget(QLabel(header_layout))
     else:
         l.addLayout(header_layout)
-    txt = ScanQRTextEdit(allow_multi=allow_multi)
+    txt = ScanQRTextEdit(allow_multi=allow_multi, config=config)
     if default:
         txt.setText(default)
     l.addWidget(txt)
@@ -440,14 +460,20 @@ def filename_field(parent, config, defaultname, select_msg):
     hbox = QHBoxLayout()
 
     directory = config.get('io_dir', os.path.expanduser('~'))
-    path = os.path.join( directory, defaultname )
+    path = os.path.join(directory, defaultname)
     filename_e = QLineEdit()
     filename_e.setText(path)
 
     def func():
         text = filename_e.text()
-        _filter = "*.csv" if text.endswith(".csv") else "*.json" if text.endswith(".json") else None
-        p, __ = QFileDialog.getSaveFileName(None, select_msg, text, _filter)
+        _filter = "*.csv" if defaultname.endswith(".csv") else "*.json" if defaultname.endswith(".json") else None
+        p = getSaveFileName(
+            parent=None,
+            title=select_msg,
+            filename=text,
+            filter=_filter,
+            config=config,
+        )
         if p:
             filename_e.setText(p)
 
@@ -475,24 +501,58 @@ class ElectrumItemDelegate(QStyledItemDelegate):
         self.opened = None
         def on_closeEditor(editor: QLineEdit, hint):
             self.opened = None
+            self.tv.is_editor_open = False
+            if self.tv._pending_update:
+                self.tv.update()
         def on_commitData(editor: QLineEdit):
             new_text = editor.text()
             idx = QModelIndex(self.opened)
             row, col = idx.row(), idx.column()
-            _prior_text, user_role = self.tv.get_text_and_userrole_from_coordinate(row, col)
-            # check that we didn't forget to set UserRole on an editable field
-            assert user_role is not None, (row, col)
-            self.tv.on_edited(idx, user_role, new_text)
+            edit_key = self.tv.get_edit_key_from_coordinate(row, col)
+            assert edit_key is not None, (idx.row(), idx.column())
+            self.tv.on_edited(idx, edit_key=edit_key, text=new_text)
         self.closeEditor.connect(on_closeEditor)
         self.commitData.connect(on_commitData)
 
     def createEditor(self, parent, option, idx):
         self.opened = QPersistentModelIndex(idx)
+        self.tv.is_editor_open = True
         return super().createEditor(parent, option, idx)
+
+    def paint(self, painter: QPainter, option: QStyleOptionViewItem, idx: QModelIndex) -> None:
+        custom_data = idx.data(MyTreeView.ROLE_CUSTOM_PAINT)
+        if custom_data is None:
+            return super().paint(painter, option, idx)
+        else:
+            # let's call the default paint method first; to paint the background (e.g. selection)
+            super().paint(painter, option, idx)
+            # and now paint on top of that
+            custom_data.paint(painter, option.rect)
+
+    def helpEvent(self, evt: QHelpEvent, view: QAbstractItemView, option: QStyleOptionViewItem, idx: QModelIndex) -> bool:
+        custom_data = idx.data(MyTreeView.ROLE_CUSTOM_PAINT)
+        if custom_data is None:
+            return super().helpEvent(evt, view, option, idx)
+        else:
+            if evt.type() == QEvent.ToolTip:
+                if custom_data.show_tooltip(evt):
+                    return True
+        return super().helpEvent(evt, view, option, idx)
+
+    def sizeHint(self, option: QStyleOptionViewItem, idx: QModelIndex) -> QSize:
+        custom_data = idx.data(MyTreeView.ROLE_CUSTOM_PAINT)
+        if custom_data is None:
+            return super().sizeHint(option, idx)
+        else:
+            default_size = super().sizeHint(option, idx)
+            return custom_data.sizeHint(default_size)
 
 
 class MyTreeView(QTreeView):
     ROLE_CLIPBOARD_DATA = Qt.UserRole + 100
+    ROLE_CUSTOM_PAINT   = Qt.UserRole + 101
+    ROLE_EDIT_KEY       = Qt.UserRole + 102
+    ROLE_FILTER_DATA    = Qt.UserRole + 103
 
     filter_columns: Iterable[int]
 
@@ -507,15 +567,12 @@ class MyTreeView(QTreeView):
         self.setUniformRowHeights(True)
 
         # Control which columns are editable
-        if editable_columns is not None:
-            editable_columns = set(editable_columns)
-        elif stretch_column is not None:
-            editable_columns = {stretch_column}
-        else:
-            editable_columns = {}
-        self.editable_columns = editable_columns
+        if editable_columns is None:
+            editable_columns = []
+        self.editable_columns = set(editable_columns)
         self.setItemDelegate(ElectrumItemDelegate(self))
         self.current_filter = ""
+        self.is_editor_open = False
 
         self.setRootIsDecorated(False)  # remove left margin
         self.toolbar_shown = False
@@ -538,12 +595,12 @@ class MyTreeView(QTreeView):
         items = self.selectionModel().selectedIndexes()
         return list(x for x in items if x.column() == column)
 
-    def current_item_user_role(self, col) -> Any:
+    def get_role_data_for_current_item(self, *, col, role) -> Any:
         idx = self.selectionModel().currentIndex()
         idx = idx.sibling(idx.row(), col)
         item = self.item_from_index(idx)
         if item:
-            return item.data(Qt.UserRole)
+            return item.data(role)
 
     def item_from_index(self, idx: QModelIndex) -> Optional[QStandardItem]:
         model = self.model()
@@ -580,7 +637,7 @@ class MyTreeView(QTreeView):
     def keyPressEvent(self, event):
         if self.itemDelegate().opened:
             return
-        if event.key() in [ Qt.Key_F2, Qt.Key_Return ]:
+        if event.key() in [Qt.Key_F2, Qt.Key_Return, Qt.Key_Enter]:
             self.on_activated(self.selectionModel().currentIndex())
             return
         super().keyPressEvent(event)
@@ -599,10 +656,8 @@ class MyTreeView(QTreeView):
         """
         return super().edit(idx, trigger, event)
 
-    def on_edited(self, idx: QModelIndex, user_role, text):
-        self.parent.wallet.set_label(user_role, text)
-        self.parent.history_model.refresh('on_edited in MyTreeView')
-        self.parent.update_completions()
+    def on_edited(self, idx: QModelIndex, edit_key, *, text: str) -> None:
+        raise NotImplementedError()
 
     def should_hide(self, row):
         """
@@ -611,11 +666,28 @@ class MyTreeView(QTreeView):
         """
         return False
 
-    def get_text_and_userrole_from_coordinate(self, row_num, column):
-        idx = self.model().index(row_num, column)
+    def get_text_from_coordinate(self, row, col) -> str:
+        idx = self.model().index(row, col)
         item = self.item_from_index(idx)
-        user_role = item.data(Qt.UserRole)
-        return item.text(), user_role
+        return item.text()
+
+    def get_role_data_from_coordinate(self, row, col, *, role) -> Any:
+        idx = self.model().index(row, col)
+        item = self.item_from_index(idx)
+        role_data = item.data(role)
+        return role_data
+
+    def get_edit_key_from_coordinate(self, row, col) -> Any:
+        # overriding this might allow avoiding storing duplicate data
+        return self.get_role_data_from_coordinate(row, col, role=self.ROLE_EDIT_KEY)
+
+    def get_filter_data_from_coordinate(self, row, col) -> str:
+        filter_data = self.get_role_data_from_coordinate(row, col, role=self.ROLE_FILTER_DATA)
+        if filter_data:
+            return filter_data
+        txt = self.get_text_from_coordinate(row, col)
+        txt = txt.lower()
+        return txt
 
     def hide_row(self, row_num):
         """
@@ -628,9 +700,8 @@ class MyTreeView(QTreeView):
             self.setRowHidden(row_num, QModelIndex(), False)
             return
         for column in self.filter_columns:
-            txt, _ = self.get_text_and_userrole_from_coordinate(row_num, column)
-            txt = txt.lower()
-            if self.current_filter in txt:
+            filter_data = self.get_filter_data_from_coordinate(row_num, column)
+            if self.current_filter in filter_data:
                 # the filter matched, but the date filter might apply
                 self.setRowHidden(row_num, QModelIndex(), bool(should_hide))
                 break
@@ -683,6 +754,8 @@ class MyTreeView(QTreeView):
         cc = menu.addMenu(_("Copy"))
         for column in self.Columns:
             column_title = self.original_model().horizontalHeaderItem(column).text()
+            if not column_title:
+                continue
             item_col = self.item_from_index(idx.sibling(idx.row(), column))
             clipboard_data = item_col.data(self.ROLE_CLIPBOARD_DATA)
             if clipboard_data is None:
@@ -704,7 +777,8 @@ class MyTreeView(QTreeView):
 
     def maybe_defer_update(self) -> bool:
         """Returns whether we should defer an update/refresh."""
-        defer = not self.isVisible() and not self._forced_update
+        defer = (not self._forced_update
+                 and (not self.isVisible() or self.is_editor_open))
         # side-effect: if we decide to defer update, the state will become stale:
         self._pending_update = defer
         return defer
@@ -734,7 +808,7 @@ class ButtonsWidget(QWidget):
 
     def __init__(self):
         super(QWidget, self).__init__()
-        self.buttons = []
+        self.buttons = []  # type: List[QToolButton]
 
     def resizeButtons(self):
         frameWidth = self.style().pixelMetric(QStyle.PM_DefaultFrameWidth)
@@ -764,6 +838,14 @@ class ButtonsWidget(QWidget):
     def on_copy(self):
         self.app.clipboard().setText(self.text())
         QToolTip.showText(QCursor.pos(), _("Text copied to clipboard"), self)
+
+    def addPasteButton(self, app):
+        self.app = app
+        self.addButton("copy.png", self.on_paste, _("Paste from clipboard"))
+
+    def on_paste(self):
+        self.setText(self.app.clipboard().text())
+
 
 class ButtonsLineEdit(QLineEdit, ButtonsWidget):
     def __init__(self, text=None):
@@ -843,6 +925,8 @@ class TaskThread(QThread):
 
     def stop(self):
         self.tasks.put(None)
+        self.exit()
+        self.wait()
 
 
 class ColorSchemeItem:
@@ -870,6 +954,7 @@ class ColorScheme:
     RED = ColorSchemeItem("#7c1111", "#f18c8c")
     BLUE = ColorSchemeItem("#123b7c", "#8cb3f2")
     DEFAULT = ColorSchemeItem("black", "white")
+    GRAY = ColorSchemeItem("gray", "gray")
 
     @staticmethod
     def has_dark_background(widget):
@@ -915,9 +1000,14 @@ class AcceptFileDragDrop:
         raise NotImplementedError()
 
 
-def import_meta_gui(electrum_window, title, importer, on_success):
+def import_meta_gui(electrum_window: 'ElectrumWindow', title, importer, on_success):
     filter_ = "JSON (*.json);;All files (*)"
-    filename = electrum_window.getOpenFileName(_("Open {} file").format(title), filter_)
+    filename = getOpenFileName(
+        parent=electrum_window,
+        title=_("Open {} file").format(title),
+        filter=filter_,
+        config=electrum_window.config,
+    )
     if not filename:
         return
     try:
@@ -929,10 +1019,15 @@ def import_meta_gui(electrum_window, title, importer, on_success):
         on_success()
 
 
-def export_meta_gui(electrum_window, title, exporter):
+def export_meta_gui(electrum_window: 'ElectrumWindow', title, exporter):
     filter_ = "JSON (*.json);;All files (*)"
-    filename = electrum_window.getSaveFileName(_("Select file to save your {}").format(title),
-                                               'electrum_{}.json'.format(title), filter_)
+    filename = getSaveFileName(
+        parent=electrum_window,
+        title=_("Select file to save your {}").format(title),
+        filename='electrum_{}.json'.format(title),
+        filter=filter_,
+        config=electrum_window.config,
+    )
     if not filename:
         return
     try:
@@ -944,21 +1039,44 @@ def export_meta_gui(electrum_window, title, exporter):
                                      .format(title, str(filename)))
 
 
-def get_parent_main_window(widget):
-    """Returns a reference to the ElectrumWindow this widget belongs to."""
-    from .main_window import ElectrumWindow
-    from .transaction_dialog import TxDialog
-#    from .configure_name_dialog import ConfigureNameDialog
-    for _ in range(100):
-        if widget is None:
-            return None
-        if isinstance(widget, ElectrumWindow):
-            return widget
-        elif isinstance(widget, (TxDialog)):
-            return widget.main_window
-        else:
-            widget = widget.parentWidget()
-    return None
+def getOpenFileName(*, parent, title, filter="", config: 'SimpleConfig') -> Optional[str]:
+    """Custom wrapper for getOpenFileName that remembers the path selected by the user."""
+    directory = config.get('io_dir', os.path.expanduser('~'))
+    fileName, __ = QFileDialog.getOpenFileName(parent, title, directory, filter)
+    if fileName and directory != os.path.dirname(fileName):
+        config.set_key('io_dir', os.path.dirname(fileName), True)
+    return fileName
+
+
+def getSaveFileName(
+        *,
+        parent,
+        title,
+        filename,
+        filter="",
+        default_extension: str = None,
+        default_filter: str = None,
+        config: 'SimpleConfig',
+) -> Optional[str]:
+    """Custom wrapper for getSaveFileName that remembers the path selected by the user."""
+    directory = config.get('io_dir', os.path.expanduser('~'))
+    path = os.path.join(directory, filename)
+
+    file_dialog = QFileDialog(parent, title, path, filter)
+    file_dialog.setAcceptMode(QFileDialog.AcceptSave)
+    if default_extension:
+        # note: on MacOS, the selected filter's first extension seems to have priority over this...
+        file_dialog.setDefaultSuffix(default_extension)
+    if default_filter:
+        assert default_filter in filter, f"default_filter={default_filter!r} does not appear in filter={filter!r}"
+        file_dialog.selectNameFilter(default_filter)
+    if file_dialog.exec() != QDialog.Accepted:
+        return None
+
+    selected_path = file_dialog.selectedFiles()[0]
+    if selected_path and directory != os.path.dirname(selected_path):
+        config.set_key('io_dir', os.path.dirname(selected_path), True)
+    return selected_path
 
 
 def icon_path(icon_basename):
@@ -969,6 +1087,27 @@ def icon_path(icon_basename):
 def read_QIcon(icon_basename):
     return QIcon(icon_path(icon_basename))
 
+class IconLabel(QWidget):
+    IconSize = QSize(16, 16)
+    HorizontalSpacing = 2
+    def __init__(self, *, text='', final_stretch=True):
+        super(QWidget, self).__init__()
+        layout = QHBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        self.setLayout(layout)
+        self.icon = QLabel()
+        self.label = QLabel(text)
+        self.label.setTextInteractionFlags(Qt.TextSelectableByMouse)
+        layout.addWidget(self.label)
+        layout.addSpacing(self.HorizontalSpacing)
+        layout.addWidget(self.icon)
+        if final_stretch:
+            layout.addStretch()
+    def setText(self, text):
+        self.label.setText(text)
+    def setIcon(self, icon):
+        self.icon.setPixmap(icon.pixmap(self.IconSize))
+        self.icon.repaint()  # macOS hack for #6269
 
 def get_default_language():
     name = QLocale.system().name()
@@ -989,9 +1128,132 @@ def webopen(url: str):
         if os.fork() == 0:
             del os.environ['LD_LIBRARY_PATH']
             webbrowser.open(url)
-            sys.exit(0)
+            os._exit(0)
     else:
         webbrowser.open(url)
+
+
+class FixedAspectRatioLayout(QLayout):
+    def __init__(self, parent: QWidget = None, aspect_ratio: float = 1.0):
+        super().__init__(parent)
+        self.aspect_ratio = aspect_ratio
+        self.items: List[QLayoutItem] = []
+
+    def set_aspect_ratio(self, aspect_ratio: float = 1.0):
+        self.aspect_ratio = aspect_ratio
+        self.update()
+
+    def addItem(self, item: QLayoutItem):
+        self.items.append(item)
+
+    def count(self) -> int:
+        return len(self.items)
+
+    def itemAt(self, index: int) -> QLayoutItem:
+        if index >= len(self.items):
+            return None
+        return self.items[index]
+
+    def takeAt(self, index: int) -> QLayoutItem:
+        if index >= len(self.items):
+            return None
+        return self.items.pop(index)
+
+    def _get_contents_margins_size(self) -> QSize:
+        margins = self.contentsMargins()
+        return QSize(margins.left() + margins.right(), margins.top() + margins.bottom())
+
+    def setGeometry(self, rect: QRect):
+        super().setGeometry(rect)
+        if not self.items:
+            return
+
+        contents = self.contentsRect()
+        if contents.height() > 0:
+            c_aratio = contents.width() / contents.height()
+        else:
+            c_aratio = 1
+        s_aratio = self.aspect_ratio
+        item_rect = QRect(QPoint(0, 0), QSize(
+            contents.width() if c_aratio < s_aratio else contents.height() * s_aratio,
+            contents.height() if c_aratio > s_aratio else contents.width() / s_aratio
+        ))
+
+        content_margins = self.contentsMargins()
+        free_space = contents.size() - item_rect.size()
+
+        for item in self.items:
+            if free_space.width() > 0 and not item.alignment() & Qt.AlignLeft:
+                if item.alignment() & Qt.AlignRight:
+                    item_rect.moveRight(contents.width() + content_margins.right())
+                else:
+                    item_rect.moveLeft(content_margins.left() + (free_space.width() / 2))
+            else:
+                item_rect.moveLeft(content_margins.left())
+
+            if free_space.height() > 0 and not item.alignment() & Qt.AlignTop:
+                if item.alignment() & Qt.AlignBottom:
+                    item_rect.moveBottom(contents.height() + content_margins.bottom())
+                else:
+                    item_rect.moveTop(content_margins.top() + (free_space.height() / 2))
+            else:
+                item_rect.moveTop(content_margins.top())
+
+            item.widget().setGeometry(item_rect)
+
+    def sizeHint(self) -> QSize:
+        result = QSize()
+        for item in self.items:
+            result = result.expandedTo(item.sizeHint())
+        return self._get_contents_margins_size() + result
+
+    def minimumSize(self) -> QSize:
+        result = QSize()
+        for item in self.items:
+            result = result.expandedTo(item.minimumSize())
+        return self._get_contents_margins_size() + result
+
+    def expandingDirections(self) -> Qt.Orientations:
+        return Qt.Horizontal | Qt.Vertical
+
+
+def QColorLerp(a: QColor, b: QColor, t: float):
+    """
+    Blends two QColors. t=0 returns a. t=1 returns b. t=0.5 returns evenly mixed.
+    """
+    t = max(min(t, 1.0), 0.0)
+    i_t = 1.0 - t
+    return QColor(
+        (a.red()   * i_t) + (b.red()   * t),
+        (a.green() * i_t) + (b.green() * t),
+        (a.blue()  * i_t) + (b.blue()  * t),
+        (a.alpha() * i_t) + (b.alpha() * t),
+    )
+
+
+class ImageGraphicsEffect(QObject):
+    """
+    Applies a QGraphicsEffect to a QImage
+    """
+
+    def __init__(self, parent: QObject, effect: QGraphicsEffect):
+        super().__init__(parent)
+        assert effect, 'effect must be set'
+        self.effect = effect
+        self.graphics_scene = QGraphicsScene()
+        self.graphics_item = QGraphicsPixmapItem()
+        self.graphics_item.setGraphicsEffect(effect)
+        self.graphics_scene.addItem(self.graphics_item)
+
+    def apply(self, image: QImage):
+        assert image, 'image must be set'
+        result = QImage(image.size(), QImage.Format_ARGB32)
+        result.fill(Qt.transparent)
+        painter = QPainter(result)
+        self.graphics_item.setPixmap(QPixmap.fromImage(image))
+        self.graphics_scene.render(painter)
+        self.graphics_item.setPixmap(QPixmap())
+        return result
 
 
 if __name__ == "__main__":

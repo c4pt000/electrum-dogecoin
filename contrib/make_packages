@@ -37,6 +37,3 @@ export BUILD_TIME="$(LC_ALL=C TZ=UTC date +'%H:%M:%S' -d @$SOURCE_DATE_EPOCH)"
 python3 -m pip install --no-compile --no-dependencies --no-binary :all: \
     -r "$CONTRIB"/deterministic-build/requirements.txt -t "$CONTRIB"/../packages
 
-python3 -m pip install --no-compile --no-dependencies --no-binary :all: \
-    -r "$CONTRIB"/deterministic-build/requirements-build-android.txt -t "$CONTRIB"/../packages
-

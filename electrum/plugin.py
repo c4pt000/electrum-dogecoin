@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Electrum - lightweight Bitcoin client
+# Electrum - lightweight Radiocoin client
 # Copyright (C) 2015 Thomas Voegtlin
 #
 # Permission is hereby granted, free of charge, to any person
@@ -29,9 +29,10 @@ import time
 import threading
 import sys
 from typing import (NamedTuple, Any, Union, TYPE_CHECKING, Optional, Tuple,
-                    Dict, Iterable, List, Sequence)
+                    Dict, Iterable, List, Sequence, Callable, TypeVar)
 import concurrent
 from concurrent import futures
+from functools import wraps, partial
 
 from .i18n import _
 from .util import (profiler, DaemonThread, UserCancelled, ThreadJob, UserFacingException)
@@ -237,7 +238,7 @@ def run_hook(name, *args):
 
 class BasePlugin(Logger):
 
-    def __init__(self, parent, config, name):
+    def __init__(self, parent, config: 'SimpleConfig', name):
         self.parent = parent  # type: Plugins  # The plugins object
         self.name = name
         self.config = config
@@ -334,11 +335,37 @@ PLACEHOLDER_HW_CLIENT_LABELS = {None, "", " "}
 #     https://github.com/signal11/hidapi/pull/414#issuecomment-445164238
 # It is not entirely clear to me, exactly what is safe and what isn't, when
 # using multiple threads...
-# For now, we use a dedicated thread to enumerate devices (_hid_executor),
-# and we synchronize all device opens/closes/enumeration (_hid_lock).
-# FIXME there are still probably threading issues with how we use hidapi...
-_hid_executor = None  # type: Optional[concurrent.futures.Executor]
-_hid_lock = threading.Lock()
+# Hence, we use a single thread for all device communications, including
+# enumeration. Everything that uses hidapi, libusb, etc, MUST run on
+# the following thread:
+_hwd_comms_executor = concurrent.futures.ThreadPoolExecutor(
+    max_workers=1,
+    thread_name_prefix='hwd_comms_thread'
+)
+
+
+T = TypeVar('T')
+
+
+def run_in_hwd_thread(func: Callable[[], T]) -> T:
+    if threading.current_thread().name.startswith("hwd_comms_thread"):
+        return func()
+    else:
+        fut = _hwd_comms_executor.submit(func)
+        return fut.result()
+        #except (concurrent.futures.CancelledError, concurrent.futures.TimeoutError) as e:
+
+
+def runs_in_hwd_thread(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        return run_in_hwd_thread(partial(func, *args, **kwargs))
+    return wrapper
+
+
+def assert_runs_in_hwd_thread():
+    if not threading.current_thread().name.startswith("hwd_comms_thread"):
+        raise Exception("must only be called from HWD communication thread")
 
 
 class DeviceMgr(ThreadJob):
@@ -382,25 +409,13 @@ class DeviceMgr(ThreadJob):
         self.clients = {}  # type: Dict[HardwareClientBase, Tuple[Union[str, bytes], str]]
         # What we recognise.  (vendor_id, product_id) -> Plugin
         self._recognised_hardware = {}  # type: Dict[Tuple[int, int], HW_PluginBase]
+        self._recognised_vendor = {}  # type: Dict[int, HW_PluginBase]  # vendor_id -> Plugin
         # Custom enumerate functions for devices we don't know about.
         self._enumerate_func = set()  # Needs self.lock.
-        # locks: if you need to take multiple ones, acquire them in the order they are defined here!
-        self._scan_lock = threading.RLock()
+
         self.lock = threading.RLock()
-        self.hid_lock = _hid_lock
 
         self.config = config
-
-        global _hid_executor
-        if _hid_executor is None:
-            _hid_executor = concurrent.futures.ThreadPoolExecutor(max_workers=1,
-                                                                  thread_name_prefix='hid_enumerate_thread')
-
-    def with_scan_lock(func):
-        def func_wrapper(self: 'DeviceMgr', *args, **kwargs):
-            with self._scan_lock:
-                return func(self, *args, **kwargs)
-        return func_wrapper
 
     def thread_jobs(self):
         # Thread job to handle device timeouts
@@ -419,10 +434,15 @@ class DeviceMgr(ThreadJob):
         for pair in device_pairs:
             self._recognised_hardware[pair] = plugin
 
+    def register_vendor_ids(self, vendor_ids: Iterable[int], *, plugin: 'HW_PluginBase'):
+        for vendor_id in vendor_ids:
+            self._recognised_vendor[vendor_id] = plugin
+
     def register_enumerate_func(self, func):
         with self.lock:
             self._enumerate_func.add(func)
 
+    @runs_in_hwd_thread
     def create_client(self, device: 'Device', handler: Optional['HardwareHandlerBase'],
                       plugin: 'HW_PluginBase') -> Optional['HardwareClientBase']:
         # Get from cache first
@@ -452,7 +472,7 @@ class DeviceMgr(ThreadJob):
             if xpub not in self.xpub_ids:
                 return
             _id = self.xpub_ids.pop(xpub)
-            self._close_client(_id)
+        self._close_client(_id)
 
     def unpair_id(self, id_):
         xpub = self.xpub_by_id(id_)
@@ -462,8 +482,9 @@ class DeviceMgr(ThreadJob):
             self._close_client(id_)
 
     def _close_client(self, id_):
-        client = self._client_by_id(id_)
-        self.clients.pop(client, None)
+        with self.lock:
+            client = self._client_by_id(id_)
+            self.clients.pop(client, None)
         if client:
             client.close()
 
@@ -486,7 +507,7 @@ class DeviceMgr(ThreadJob):
             self.scan_devices()
         return self._client_by_id(id_)
 
-    @with_scan_lock
+    @runs_in_hwd_thread
     def client_for_keystore(self, plugin: 'HW_PluginBase', handler: Optional['HardwareHandlerBase'],
                             keystore: 'Hardware_KeyStore',
                             force_pair: bool, *,
@@ -554,10 +575,10 @@ class DeviceMgr(ThreadJob):
         # The user input has wrong PIN or passphrase, or cancelled input,
         # or it is not pairable
         raise DeviceUnpairableError(
-            _('Electrum-DOGE cannot pair with your {}.\n\n'
-              'Before you request namecoins to be sent to addresses in this '
+            _('Electrum cannot pair with your {}.\n\n'
+              'Before you request bitcoins to be sent to addresses in this '
               'wallet, ensure you can pair with your device, or that you have '
-              'its seed (and passphrase, if any).  Otherwise all namecoins you '
+              'its seed (and passphrase, if any).  Otherwise all bitcoins you '
               'receive will be unspendable.').format(plugin.device))
 
     def unpaired_device_infos(self, handler: Optional['HardwareHandlerBase'], plugin: 'HW_PluginBase',
@@ -573,23 +594,27 @@ class DeviceMgr(ThreadJob):
         devices = [dev for dev in devices if not self.xpub_by_id(dev.id_)]
         infos = []
         for device in devices:
-            if device.product_key not in plugin.DEVICE_IDS:
+            if not plugin.can_recognize_device(device):
                 continue
             try:
                 client = self.create_client(device, handler, plugin)
+                if not client:
+                    continue
+                label = client.label()
+                is_initialized = client.is_initialized()
+                soft_device_id = client.get_soft_device_id()
+                model_name = client.device_model_name()
             except Exception as e:
                 self.logger.error(f'failed to create client for {plugin.name} at {device.path}: {repr(e)}')
                 if include_failing_clients:
                     infos.append(DeviceInfo(device=device, exception=e, plugin_name=plugin.name))
                 continue
-            if not client:
-                continue
             infos.append(DeviceInfo(device=device,
-                                    label=client.label(),
-                                    initialized=client.is_initialized(),
+                                    label=label,
+                                    initialized=is_initialized,
                                     plugin_name=plugin.name,
-                                    soft_device_id=client.get_soft_device_id(),
-                                    model_name=client.device_model_name()))
+                                    soft_device_id=soft_device_id,
+                                    model_name=model_name))
 
         return infos
 
@@ -655,33 +680,30 @@ class DeviceMgr(ThreadJob):
         # note: updated label/soft_device_id will be saved after pairing succeeds
         return info
 
-    @with_scan_lock
+    @runs_in_hwd_thread
     def _scan_devices_with_hid(self) -> List['Device']:
         try:
             import hid
         except ImportError:
             return []
 
-        def hid_enumerate():
-            with self.hid_lock:
-                return hid.enumerate(0, 0)
-
-        hid_list_fut = _hid_executor.submit(hid_enumerate)
-        try:
-            hid_list = hid_list_fut.result()
-        except (concurrent.futures.CancelledError, concurrent.futures.TimeoutError) as e:
-            return []
-
         devices = []
-        for d in hid_list:
-            product_key = (d['vendor_id'], d['product_id'])
+        for d in hid.enumerate(0, 0):
+            vendor_id = d['vendor_id']
+            product_key = (vendor_id, d['product_id'])
+            plugin = None
             if product_key in self._recognised_hardware:
                 plugin = self._recognised_hardware[product_key]
+            elif vendor_id in self._recognised_vendor:
+                plugin = self._recognised_vendor[vendor_id]
+            if plugin:
                 device = plugin.create_device_from_hid_enumeration(d, product_key=product_key)
-                devices.append(device)
+                if device:
+                    devices.append(device)
         return devices
 
-    @with_scan_lock
+    @runs_in_hwd_thread
+    @profiler
     def scan_devices(self) -> Sequence['Device']:
         self.logger.info("scanning devices...")
 
@@ -702,18 +724,20 @@ class DeviceMgr(ThreadJob):
 
         # find out what was disconnected
         pairs = [(dev.path, dev.id_) for dev in devices]
-        disconnected_ids = []
+        disconnected_clients = []
         with self.lock:
             connected = {}
             for client, pair in self.clients.items():
                 if pair in pairs and client.has_usable_connection_with_device():
                     connected[client] = pair
                 else:
-                    disconnected_ids.append(pair[1])
+                    disconnected_clients.append((client, pair[1]))
             self.clients = connected
 
         # Unpair disconnected devices
-        for id_ in disconnected_ids:
+        for client, id_ in disconnected_clients:
             self.unpair_id(id_)
+            if client.handler:
+                client.handler.update_status(False)
 
         return devices

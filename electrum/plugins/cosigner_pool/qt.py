@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Electrum - lightweight Bitcoin client
+# Electrum - lightweight Radiocoin client
 # Copyright (C) 2014 Thomas Voegtlin
 #
 # Permission is hereby granted, free of charge, to any person
@@ -26,17 +26,19 @@
 import time
 from xmlrpc.client import ServerProxy
 from typing import TYPE_CHECKING, Union, List, Tuple
+import ssl
 
 from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5.QtWidgets import QPushButton
+import certifi
 
 from electrum import util, keystore, ecc, crypto
 from electrum import transaction
-from electrum.transaction import Transaction, PartialTransaction, tx_from_any
+from electrum.transaction import Transaction, PartialTransaction, tx_from_any, SerializationError
 from electrum.bip32 import BIP32Node
 from electrum.plugin import BasePlugin, hook
 from electrum.i18n import _
-from electrum.wallet import Multisig_Wallet
+from electrum.wallet import Multisig_Wallet, Abstract_Wallet
 from electrum.util import bh2u, bfh
 
 from electrum.gui.qt.transaction_dialog import show_transaction, TxDialog
@@ -47,7 +49,9 @@ if TYPE_CHECKING:
     from electrum.gui.qt.main_window import ElectrumWindow
 
 
-server = ServerProxy('https://cosigner.electrum.org/', allow_none=True)
+ca_path = certifi.where()
+ssl_context = ssl.create_default_context(purpose=ssl.Purpose.SERVER_AUTH, cafile=ca_path)
+server = ServerProxy('https://cosigner.electrum.org/', allow_none=True, context=ssl_context)
 
 
 class Listener(util.DaemonThread):
@@ -67,7 +71,7 @@ class Listener(util.DaemonThread):
         self.received.remove(keyhash)
 
     def run(self):
-        while self.running:
+        while self.is_running():
             if not self.keyhashes:
                 time.sleep(2)
                 continue
@@ -110,10 +114,10 @@ class Plugin(BasePlugin):
             return
         self._init_qt_received = True
         for window in gui.windows:
-            self.on_new_window(window)
+            self.load_wallet(window.wallet, window)
 
     @hook
-    def on_new_window(self, window):
+    def load_wallet(self, wallet: 'Abstract_Wallet', window: 'ElectrumWindow'):
         self.update(window)
 
     @hook
@@ -184,17 +188,27 @@ class Plugin(BasePlugin):
             except OSError: pass
             window.show_error(_("Failed to send transaction to cosigning pool") + ':\n' + repr(e))
 
+        buffer = []
+        some_window = None
+        # construct messages
         for window, xpub, K, _hash in self.cosigner_list:
             if not self.cosigner_can_sign(tx, xpub):
                 continue
-            # construct message
+            some_window = window
             raw_tx_bytes = tx.serialize_as_bytes()
             public_key = ecc.ECPubkey(K)
             message = public_key.encrypt_message(raw_tx_bytes).decode('ascii')
-            # send message
-            task = lambda: server.put(_hash, message)
-            msg = _('Sending transaction to cosigning pool...')
-            WaitingDialog(window, msg, task, on_success, on_failure)
+            buffer.append((_hash, message))
+        if not buffer:
+            return
+
+        # send messages
+        # note: we send all messages sequentially on the same thread
+        def send_messages_task():
+            for _hash, message in buffer:
+                server.put(_hash, message)
+        msg = _('Sending transaction to cosigning pool...')
+        WaitingDialog(some_window, msg, send_messages_task, on_success, on_failure)
 
     def on_receive(self, keyhash, message):
         self.logger.info(f"signal arrived for {keyhash}")
@@ -234,5 +248,9 @@ class Plugin(BasePlugin):
             return
 
         self.listener.clear(keyhash)
-        tx = tx_from_any(message)
+        try:
+            tx = tx_from_any(message)
+        except SerializationError as e:
+            window.show_error(_("Electrum was unable to deserialize the transaction:") + "\n" + str(e))
+            return
         show_transaction(tx, parent=window, prompt_if_unsaved=True)

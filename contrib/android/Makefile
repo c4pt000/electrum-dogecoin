@@ -28,11 +28,11 @@ prepare:
 	fi
 apk:
 	@make prepare
-	@-cd ../..; buildozer android debug
+	@-cd ../..; echo "y" | buildozer -v android debug
 	@make clean
 release:
 	@make prepare
-	@-cd ../..; buildozer android release
+	@-cd ../..; echo "y" | buildozer -v android release
 	@make clean
 clean:
 	# Cleaning up

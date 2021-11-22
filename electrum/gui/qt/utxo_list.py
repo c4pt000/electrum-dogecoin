@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Electrum - lightweight Bitcoin client
+# Electrum - lightweight Radiocoin client
 # Copyright (C) 2015 Thomas Voegtlin
 #
 # Permission is hereby granted, free of charge, to any person
@@ -58,10 +58,11 @@ class UTXOList(MyTreeView):
     filter_columns = [Columns.ADDRESS, Columns.LABEL, Columns.OUTPOINT]
     stretch_column = Columns.LABEL
 
+    ROLE_PREVOUT_STR = Qt.UserRole + 1000
+
     def __init__(self, parent):
         super().__init__(parent, self.create_menu,
-                         stretch_column=self.stretch_column,
-                         editable_columns=[])
+                         stretch_column=self.stretch_column)
         self._spend_set = None
         self._utxo_dict = {}
         self.wallet = self.parent.wallet
@@ -85,7 +86,7 @@ class UTXOList(MyTreeView):
         if self._spend_set is not None:
             coins = [self._utxo_dict[x] for x in self._spend_set]
             coins = self._filter_frozen_coins(coins)
-            amount = sum(x.value_sats_display() for x in coins)
+            amount = sum(x.value_sats() for x in coins)
             amount_str = self.parent.format_amount_and_units(amount)
             num_outputs_str = _("{} outputs available ({} total)").format(len(coins), len(utxos))
             self.parent.set_coincontrol_msg(_("Coin control active") + f': {num_outputs_str}, {amount_str}')
@@ -98,16 +99,16 @@ class UTXOList(MyTreeView):
         name = utxo.prevout.to_str()
         name_short = utxo.prevout.txid.hex()[:16] + '...' + ":%d" % utxo.prevout.out_idx
         self._utxo_dict[name] = utxo
-        label = self.wallet.get_label(utxo.prevout.txid.hex())
-        amount = self.parent.format_amount(utxo.value_sats_display(), whitespaces=True)
+        label = self.wallet.get_label_for_txid(utxo.prevout.txid.hex()) or self.wallet.get_label(address)
+        amount = self.parent.format_amount(utxo.value_sats(), whitespaces=True)
         labels = [name_short, address, label, amount, '%d'%height]
         utxo_item = [QStandardItem(x) for x in labels]
         self.set_editability(utxo_item)
         utxo_item[self.Columns.OUTPOINT].setData(name, self.ROLE_CLIPBOARD_DATA)
+        utxo_item[self.Columns.OUTPOINT].setData(name, self.ROLE_PREVOUT_STR)
         utxo_item[self.Columns.ADDRESS].setFont(QFont(MONOSPACE_FONT))
         utxo_item[self.Columns.AMOUNT].setFont(QFont(MONOSPACE_FONT))
         utxo_item[self.Columns.OUTPOINT].setFont(QFont(MONOSPACE_FONT))
-        utxo_item[self.Columns.ADDRESS].setData(name, Qt.UserRole)
         SELECTED_TO_SPEND_TOOLTIP = _('Coin selected to be spent')
         if name in (self._spend_set or set()):
             for col in utxo_item:
@@ -128,8 +129,8 @@ class UTXOList(MyTreeView):
     def get_selected_outpoints(self) -> Optional[List[str]]:
         if not self.model():
             return None
-        items = self.selected_in_column(self.Columns.ADDRESS)
-        return [x.data(Qt.UserRole) for x in items]
+        items = self.selected_in_column(self.Columns.OUTPOINT)
+        return [x.data(self.ROLE_PREVOUT_STR) for x in items]
 
     def _filter_frozen_coins(self, coins: List[PartialTxInput]) -> List[PartialTxInput]:
         coins = [utxo for utxo in coins
@@ -178,7 +179,7 @@ class UTXOList(MyTreeView):
             # "Details"
             tx = self.wallet.db.get_transaction(txid)
             if tx:
-                label = self.wallet.get_label(txid) or None # Prefer None if empty (None hides the Description: field in the window)
+                label = self.wallet.get_label_for_txid(txid)
                 menu.addAction(_("Details"), lambda: self.parent.show_transaction(tx, tx_desc=label))
             # "Copy ..."
             idx = self.indexAt(position)
@@ -216,3 +217,8 @@ class UTXOList(MyTreeView):
                 menu.addAction(_("Unfreeze Addresses"), lambda: self.parent.set_frozen_state_of_addresses(addrs, False))
 
         menu.exec_(self.viewport().mapToGlobal(position))
+
+    def get_filter_data_from_coordinate(self, row, col):
+        if col == self.Columns.OUTPOINT:
+            return self.get_role_data_from_coordinate(row, col, role=self.ROLE_PREVOUT_STR)
+        return super().get_filter_data_from_coordinate(row, col)

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Electrum - lightweight Bitcoin client
+# Electrum - lightweight Radiocoin client
 # Copyright (C) 2011 thomasv@gitorious
 #
 # Permission is hereby granted, free of charge, to any person
@@ -29,12 +29,13 @@ import sys
 import traceback
 import asyncio
 import socket
-from typing import Tuple, Union, List, TYPE_CHECKING, Optional, Set, NamedTuple
+from typing import Tuple, Union, List, TYPE_CHECKING, Optional, Set, NamedTuple, Any, Sequence, Dict
 from collections import defaultdict
 from ipaddress import IPv4Network, IPv6Network, ip_address, IPv6Address, IPv4Address
 import itertools
 import logging
 import hashlib
+import functools
 
 import aiorpcx
 from aiorpcx import TaskGroup
@@ -44,16 +45,20 @@ from aiorpcx.jsonrpc import JSONRPC, CodeMessageError
 from aiorpcx.rawsocket import RSClient
 import certifi
 
-from .util import ignore_exceptions, log_exceptions, bfh, SilentTaskGroup, MySocksProxy
+from .util import (ignore_exceptions, log_exceptions, bfh, SilentTaskGroup, MySocksProxy,
+                   is_integer, is_non_negative_integer, is_hash256_str, is_hex_str,
+                   is_int_or_float, is_non_negative_int_or_float)
 from . import util
 from . import x509
 from . import pem
 from . import version
 from . import blockchain
-from .blockchain import Blockchain
+from .blockchain import Blockchain, HEADER_SIZE
+from . import bitcoin
 from . import constants
 from .i18n import _
 from .logging import Logger
+from .transaction import Transaction
 
 if TYPE_CHECKING:
     from .network import Network
@@ -64,11 +69,7 @@ ca_path = certifi.where()
 
 BUCKET_NAME_OF_ONION_SERVERS = 'onion'
 
-# The default Bitcoin frame size limit of 1 MB doesn't work for AuxPoW-based
-# chains, because those chains' block headers have extra AuxPoW data.  A limit
-# of 10 MB works fine for Namecoin as of block height 418744 (5 MB fails after
-# height 155232); we set a limit of 20 MB so that we have extra wiggle room.
-MAX_INCOMING_MSG_SIZE = 20_000_000  # in bytes
+MAX_INCOMING_MSG_SIZE = 1_000_000  # in bytes
 
 _KNOWN_NETWORK_PROTOCOLS = {'t', 's'}
 PREFERRED_NETWORK_PROTOCOL = 's'
@@ -80,21 +81,66 @@ class NetworkTimeout:
     class Generic:
         NORMAL = 30
         RELAXED = 45
-        MOST_RELAXED = 180
+        MOST_RELAXED = 600
+
     class Urgent(Generic):
         NORMAL = 10
         RELAXED = 20
         MOST_RELAXED = 60
 
+
+def assert_non_negative_integer(val: Any) -> None:
+    if not is_non_negative_integer(val):
+        raise RequestCorrupted(f'{val!r} should be a non-negative integer')
+
+
+def assert_integer(val: Any) -> None:
+    if not is_integer(val):
+        raise RequestCorrupted(f'{val!r} should be an integer')
+
+
+def assert_int_or_float(val: Any) -> None:
+    if not is_int_or_float(val):
+        raise RequestCorrupted(f'{val!r} should be int or float')
+
+
+def assert_non_negative_int_or_float(val: Any) -> None:
+    if not is_non_negative_int_or_float(val):
+        raise RequestCorrupted(f'{val!r} should be a non-negative int or float')
+
+
+def assert_hash256_str(val: Any) -> None:
+    if not is_hash256_str(val):
+        raise RequestCorrupted(f'{val!r} should be a hash256 str')
+
+
+def assert_hex_str(val: Any) -> None:
+    if not is_hex_str(val):
+        raise RequestCorrupted(f'{val!r} should be a hex str')
+
+
+def assert_dict_contains_field(d: Any, *, field_name: str) -> Any:
+    if not isinstance(d, dict):
+        raise RequestCorrupted(f'{d!r} should be a dict')
+    if field_name not in d:
+        raise RequestCorrupted(f'required field {field_name!r} missing from dict')
+    return d[field_name]
+
+
+def assert_list_or_tuple(val: Any) -> None:
+    if not isinstance(val, (list, tuple)):
+        raise RequestCorrupted(f'{val!r} should be a list or tuple')
+
+
 class NotificationSession(RPCSession):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, interface: 'Interface', **kwargs):
         super(NotificationSession, self).__init__(*args, **kwargs)
         self.subscriptions = defaultdict(list)
         self.cache = {}
         self.default_timeout = NetworkTimeout.Generic.NORMAL
         self._msg_counter = itertools.count(start=1)
-        self.interface = None  # type: Optional[Interface]
+        self.interface = interface
         self.cost_hard_limit = 0  # disable aiorpcx resource limits
 
     async def handle_request(self, request):
@@ -171,7 +217,9 @@ class NotificationSession(RPCSession):
 
     def default_framer(self):
         # overridden so that max_size can be customized
-        return NewlineFramer(max_size=MAX_INCOMING_MSG_SIZE)
+        max_size = int(self.interface.network.config.get('network_max_incoming_msg_size',
+                                                         MAX_INCOMING_MSG_SIZE))
+        return NewlineFramer(max_size=max_size)
 
 
 class NetworkException(Exception): pass
@@ -191,7 +239,7 @@ class RequestTimedOut(GracefulDisconnect):
         return _("Network request timed out.")
 
 
-class RequestCorrupted(GracefulDisconnect): pass
+class RequestCorrupted(Exception): pass
 
 class ErrorParsingSSLCert(Exception): pass
 class ErrorGettingSSLCertFromServer(Exception): pass
@@ -254,6 +302,12 @@ class ServerAddr:
             protocol = PREFERRED_NETWORK_PROTOCOL
         return ServerAddr(host=host, port=port, protocol=protocol)
 
+    def to_friendly_name(self) -> str:
+        # note: this method is closely linked to from_str_with_inference
+        if self.protocol == 's':  # hide trailing ":s"
+            return self.net_addr_str()
+        return str(self)
+
     def __str__(self):
         return '{}:{}'.format(self.net_addr_str(), self.protocol)
 
@@ -298,7 +352,7 @@ class Interface(Logger):
 
     def __init__(self, *, network: 'Network', server: ServerAddr, proxy: Optional[dict]):
         self.ready = asyncio.Future()
-        self.got_disconnected = asyncio.Future()
+        self.got_disconnected = asyncio.Event()
         self.server = server
         Logger.__init__(self)
         assert network.config.path
@@ -317,14 +371,18 @@ class Interface(Logger):
         self.tip_header = None
         self.tip = 0
 
-        self.fee_estimates_eta = {}
+        self.fee_estimates_eta = {}  # type: Dict[int, int]
 
         # Dump network messages (only for this interface).  Set at runtime from the console.
         self.debug = False
 
-        asyncio.run_coroutine_threadsafe(
-            self.network.taskgroup.spawn(self.run()), self.network.asyncio_loop)
         self.taskgroup = SilentTaskGroup()
+
+        async def spawn_task():
+            task = await self.network.taskgroup.spawn(self.run())
+            if sys.version_info >= (3, 8):
+                task.set_name(f"interface::{str(server)}")
+        asyncio.run_coroutine_threadsafe(spawn_task(), self.network.asyncio_loop)
 
     @property
     def host(self):
@@ -423,6 +481,7 @@ class Interface(Logger):
         return sslc
 
     def handle_disconnect(func):
+        @functools.wraps(func)
         async def wrapper_func(self: 'Interface', *args, **kwargs):
             try:
                 return await func(self, *args, **kwargs)
@@ -432,9 +491,8 @@ class Interface(Logger):
                 self.logger.warning(f"disconnecting due to {repr(e)}")
                 self.logger.debug(f"(disconnect) trace for {repr(e)}", exc_info=True)
             finally:
+                self.got_disconnected.set()
                 await self.network.connection_down(self)
-                if not self.got_disconnected.done():
-                    self.got_disconnected.set_result(1)
                 # if was not 'ready' yet, schedule waiting coroutines:
                 self.ready.cancel()
         return wrapper_func
@@ -529,15 +587,12 @@ class Interface(Logger):
         self.logger.info(f'requesting block header {height} in mode {assert_mode}')
         # use lower timeout as we usually have network.bhi_lock here
         timeout = self.network.get_network_timeout_seconds(NetworkTimeout.Urgent)
-        cp_height = constants.net.max_checkpoint()
-        if height > cp_height:
-            cp_height = 0
-        res = await self.session.send_request('blockchain.block.header', [height, cp_height], timeout=timeout)
-        if cp_height != 0:
-            res = res["header"]
-        return blockchain.deserialize_full_header(bytes.fromhex(res), height)
+        res = await self.session.send_request('blockchain.block.header', [height], timeout=timeout)
+        return blockchain.deserialize_header(bytes.fromhex(res), height)
 
     async def request_chunk(self, height: int, tip=None, *, can_return_early=False):
+        if not is_non_negative_integer(height):
+            raise Exception(f"{repr(height)} is not a block height")
         index = height // 2016
         if can_return_early and index in self._requested_chunks:
             return
@@ -547,27 +602,38 @@ class Interface(Logger):
             size = min(size, tip - index * 2016 + 1)
             size = max(size, 0)
         try:
-            cp_height = constants.net.max_checkpoint()
-            if index * 2016 + size - 1 > cp_height:
-                cp_height = 0
             self._requested_chunks.add(index)
-            res = await self.session.send_request('blockchain.block.headers', [index * 2016, size, cp_height])
+            res = await self.session.send_request('blockchain.block.headers', [index * 2016, size])
         finally:
             self._requested_chunks.discard(index)
+        assert_dict_contains_field(res, field_name='count')
+        assert_dict_contains_field(res, field_name='hex')
+        assert_dict_contains_field(res, field_name='max')
+        assert_non_negative_integer(res['count'])
+        assert_non_negative_integer(res['max'])
+        assert_hex_str(res['hex'])
+        if len(res['hex']) != HEADER_SIZE * 2 * res['count']:
+            raise RequestCorrupted('inconsistent chunk hex and count')
+        # we never request more than 2016 headers, but we enforce those fit in a single response
+        if res['max'] < 2016:
+            raise RequestCorrupted(f"server uses too low 'max' count for block.headers: {res['max']} < 2016")
+        if res['count'] != size:
+            raise RequestCorrupted(f"expected {size} headers but only got {res['count']}")
         conn = self.blockchain.connect_chunk(index, res['hex'])
         if not conn:
             return conn, 0
         return conn, res['count']
 
     def is_main_server(self) -> bool:
-        return self.network.default_server == self.server
+        return (self.network.interface == self or
+                self.network.interface is None and self.network.default_server == self.server)
 
     async def open_session(self, sslc, exit_early=False):
-        async with _RSClient(session_factory=NotificationSession,
+        session_factory = lambda *args, iface=self, **kwargs: NotificationSession(*args, **kwargs, interface=iface)
+        async with _RSClient(session_factory=session_factory,
                              host=self.host, port=self.port,
                              ssl=sslc, proxy=self.proxy) as session:
             self.session = session  # type: NotificationSession
-            self.session.interface = self
             self.session.set_default_timeout(self.network.get_network_timeout_seconds(NetworkTimeout.Generic))
             try:
                 ver = await session.send_request('server.version', [self.client_name(), version.PROTOCOL_VERSION])
@@ -575,6 +641,9 @@ class Interface(Logger):
                 raise GracefulDisconnect(e)  # probably 'unsupported protocol version'
             if exit_early:
                 return
+            if ver[1] != version.PROTOCOL_VERSION:
+                raise GracefulDisconnect(f'server violated protocol-version-negotiation. '
+                                         f'we asked for {version.PROTOCOL_VERSION!r}, they sent {ver[1]!r}')
             if not self.network.check_interface_against_healthy_spread_of_connected_servers(self):
                 raise GracefulDisconnect(f'too many connected servers already '
                                          f'in bucket {self.bucket_based_on_ipaddress()}')
@@ -606,22 +675,30 @@ class Interface(Logger):
 
     async def request_fee_estimates(self):
         from .simple_config import FEE_ETA_TARGETS
-        from .bitcoin import COIN
         while True:
             async with TaskGroup() as group:
                 fee_tasks = []
                 for i in FEE_ETA_TARGETS:
-                    fee_tasks.append((i, await group.spawn(self.session.send_request('blockchain.estimatefee', [i]))))
+                    fee_tasks.append((i, await group.spawn(self.get_estimatefee(i))))
             for nblock_target, task in fee_tasks:
-                fee = int(task.result() * COIN)
+                fee = task.result()
                 if fee < 0: continue
+                assert isinstance(fee, int)
                 self.fee_estimates_eta[nblock_target] = fee
             self.network.update_fee_estimates()
             await asyncio.sleep(60)
 
-    async def close(self):
+    async def close(self, *, force_after: int = None):
+        """Closes the connection and waits for it to be closed.
+        We try to flush buffered data to the wire, so this can take some time.
+        """
+        if force_after is None:
+            # We give up after a while and just abort the connection.
+            # Note: specifically if the server is running Fulcrum, waiting seems hopeless,
+            #       the connection must be aborted (see https://github.com/cculianu/Fulcrum/issues/76)
+            force_after = 1  # seconds
         if self.session:
-            await self.session.close()
+            await self.session.close(force_after=force_after)
         # monitor_connection will cancel tasks
 
     async def run_fetch_blocks(self):
@@ -631,13 +708,13 @@ class Interface(Logger):
             item = await header_queue.get()
             raw_header = item[0]
             height = raw_header['height']
-            header = blockchain.deserialize_full_header(bfh(raw_header['hex']), height)
+            header = blockchain.deserialize_header(bfh(raw_header['hex']), height)
             self.tip_header = header
             self.tip = height
             if self.tip < constants.net.max_checkpoint():
                 raise GracefulDisconnect('server tip below max checkpoint')
             self._mark_ready()
-            await self._process_header_at_tip()
+           # await self._process_header_at_tip()
             # header processing done
             util.trigger_callback('blockchain_updated')
             util.trigger_callback('network_updated')
@@ -651,7 +728,7 @@ class Interface(Logger):
                 # another interface amended the blockchain
                 self.logger.info(f"skipping header {height}")
                 return
-            _, height = await self.step(height, header)
+#            _, height = await self.step(height, header)
             # in the simple case, height == self.tip+1
             if height <= self.tip:
                 await self.sync_until(height)
@@ -677,6 +754,7 @@ class Interface(Logger):
                 last, height = await self.step(height)
             assert (prev_last, prev_height) != (last, height), 'had to prevent infinite loop in interface.sync_until'
         return last, height
+
 
     async def step(self, height, header=None):
         assert 0 <= height <= self.tip, (height, self.tip)
@@ -707,7 +785,7 @@ class Interface(Logger):
                 self.blockchain.save_header(header)
             return 'catchup', height
 
-        good, bad, bad_header = await self._search_headers_binary(height, bad, bad_header, chain)
+#        good, bad, bad_header = await self._search_headers_binary(height, bad, bad_header, chain)
         return await self._resolve_potential_chain_fork_given_forkpoint(good, bad, bad_header)
 
     async def _search_headers_binary(self, height, bad, bad_header, chain):
@@ -733,12 +811,12 @@ class Interface(Logger):
 
         mock = 'mock' in bad_header and bad_header['mock']['connect'](height)
         real = not mock and self.blockchain.can_connect(bad_header, check_height=False)
-#        if not real and not mock:
-#            raise Exception('unexpected bad header during binary: {}'.format(bad_header))
-#        _assert_header_does_not_check_against_any_chain(bad_header)
+    #    if not real and not mock:
+        #    raise Exception('unexpected bad header during binary: {}'.format(bad_header))
+     #   _assert_header_does_not_check_against_any_chain(bad_header)
 
-        self.logger.info(f"binary search exited. good {good}, bad {bad}")
-        return good, bad, bad_header
+#        self.logger.info(f"binary search exited. good {good}, bad {bad}")3
+#        return good, bad, bad_header
 
     async def _resolve_potential_chain_fork_given_forkpoint(self, good, bad, bad_header):
         assert good + 1 == bad
@@ -795,7 +873,7 @@ class Interface(Logger):
 
     @classmethod
     def client_name(cls) -> str:
-        return f'electrum-radc/{version.ELECTRUM_VERSION}'
+        return f'electrum/{version.ELECTRUM_VERSION}'
 
     def is_tor(self):
         return self.host.endswith('.onion')
@@ -830,6 +908,182 @@ class Interface(Logger):
         if not self._ipaddr_bucket:
             self._ipaddr_bucket = do_bucket()
         return self._ipaddr_bucket
+
+    async def get_merkle_for_transaction(self, tx_hash: str, tx_height: int) -> dict:
+        if not is_hash256_str(tx_hash):
+            raise Exception(f"{repr(tx_hash)} is not a txid")
+        if not is_non_negative_integer(tx_height):
+            raise Exception(f"{repr(tx_height)} is not a block height")
+        # do request
+        res = await self.session.send_request('blockchain.transaction.get_merkle', [tx_hash, tx_height])
+        # check response
+        block_height = assert_dict_contains_field(res, field_name='block_height')
+        merkle = assert_dict_contains_field(res, field_name='merkle')
+        pos = assert_dict_contains_field(res, field_name='pos')
+        # note: tx_height was just a hint to the server, don't enforce the response to match it
+        assert_non_negative_integer(block_height)
+        assert_non_negative_integer(pos)
+        assert_list_or_tuple(merkle)
+        for item in merkle:
+            assert_hash256_str(item)
+        return res
+
+    async def get_transaction(self, tx_hash: str, *, timeout=None) -> str:
+        if not is_hash256_str(tx_hash):
+            raise Exception(f"{repr(tx_hash)} is not a txid")
+        raw = await self.session.send_request('blockchain.transaction.get', [tx_hash], timeout=timeout)
+        # validate response
+        if not is_hex_str(raw):
+            raise RequestCorrupted(f"received garbage (non-hex) as tx data (txid {tx_hash}): {raw!r}")
+        tx = Transaction(raw)
+        try:
+            tx.deserialize()  # see if raises
+        except Exception as e:
+            raise RequestCorrupted(f"cannot deserialize received transaction (txid {tx_hash})") from e
+        if tx.txid() != tx_hash:
+            raise RequestCorrupted(f"received tx does not match expected txid {tx_hash} (got {tx.txid()})")
+        return raw
+
+    async def get_history_for_scripthash(self, sh: str) -> List[dict]:
+        if not is_hash256_str(sh):
+            raise Exception(f"{repr(sh)} is not a scripthash")
+        # do request
+        res = await self.session.send_request('blockchain.scripthash.get_history', [sh])
+        # check response
+        assert_list_or_tuple(res)
+        prev_height = 1
+        for tx_item in res:
+            height = assert_dict_contains_field(tx_item, field_name='height')
+            assert_dict_contains_field(tx_item, field_name='tx_hash')
+            assert_integer(height)
+            assert_hash256_str(tx_item['tx_hash'])
+            if height in (-1, 0):
+                assert_dict_contains_field(tx_item, field_name='fee')
+                assert_non_negative_integer(tx_item['fee'])
+                prev_height = - float("inf")  # this ensures confirmed txs can't follow mempool txs
+            else:
+                # check monotonicity of heights
+                if height < prev_height:
+                    raise RequestCorrupted(f'heights of confirmed txs must be in increasing order')
+                prev_height = height
+        hashes = set(map(lambda item: item['tx_hash'], res))
+        if len(hashes) != len(res):
+            # Either server is sending garbage... or maybe if server is race-prone
+            # a recently mined tx could be included in both last block and mempool?
+            # Still, it's simplest to just disregard the response.
+            raise RequestCorrupted(f"server history has non-unique txids for sh={sh}")
+        return res
+
+    async def listunspent_for_scripthash(self, sh: str) -> List[dict]:
+        if not is_hash256_str(sh):
+            raise Exception(f"{repr(sh)} is not a scripthash")
+        # do request
+        res = await self.session.send_request('blockchain.scripthash.listunspent', [sh])
+        # check response
+        assert_list_or_tuple(res)
+        for utxo_item in res:
+            assert_dict_contains_field(utxo_item, field_name='tx_pos')
+            assert_dict_contains_field(utxo_item, field_name='value')
+            assert_dict_contains_field(utxo_item, field_name='tx_hash')
+            assert_dict_contains_field(utxo_item, field_name='height')
+            assert_non_negative_integer(utxo_item['tx_pos'])
+            assert_non_negative_integer(utxo_item['value'])
+            assert_non_negative_integer(utxo_item['height'])
+            assert_hash256_str(utxo_item['tx_hash'])
+        return res
+
+    async def get_balance_for_scripthash(self, sh: str) -> dict:
+        if not is_hash256_str(sh):
+            raise Exception(f"{repr(sh)} is not a scripthash")
+        # do request
+        res = await self.session.send_request('blockchain.scripthash.get_balance', [sh])
+        # check response
+        assert_dict_contains_field(res, field_name='confirmed')
+        assert_dict_contains_field(res, field_name='unconfirmed')
+        assert_non_negative_integer(res['confirmed'])
+        assert_non_negative_integer(res['unconfirmed'])
+        return res
+
+    async def get_txid_from_txpos(self, tx_height: int, tx_pos: int, merkle: bool):
+        if not is_non_negative_integer(tx_height):
+            raise Exception(f"{repr(tx_height)} is not a block height")
+        if not is_non_negative_integer(tx_pos):
+            raise Exception(f"{repr(tx_pos)} should be non-negative integer")
+        # do request
+        res = await self.session.send_request(
+            'blockchain.transaction.id_from_pos',
+            [tx_height, tx_pos, merkle],
+        )
+        # check response
+        if merkle:
+            assert_dict_contains_field(res, field_name='tx_hash')
+            assert_dict_contains_field(res, field_name='merkle')
+            assert_hash256_str(res['tx_hash'])
+            assert_list_or_tuple(res['merkle'])
+            for node_hash in res['merkle']:
+                assert_hash256_str(node_hash)
+        else:
+            assert_hash256_str(res)
+        return res
+
+    async def get_fee_histogram(self) -> Sequence[Tuple[Union[float, int], int]]:
+        # do request
+        res = await self.session.send_request('mempool.get_fee_histogram')
+        # check response
+        assert_list_or_tuple(res)
+        prev_fee = float('inf')
+        for fee, s in res:
+            assert_non_negative_int_or_float(fee)
+            assert_non_negative_integer(s)
+            if fee >= prev_fee:  # check monotonicity
+                raise RequestCorrupted(f'fees must be in decreasing order')
+            prev_fee = fee
+        return res
+
+    async def get_server_banner(self) -> str:
+        # do request
+        res = await self.session.send_request('server.banner')
+        # check response
+        if not isinstance(res, str):
+            raise RequestCorrupted(f'{res!r} should be a str')
+        return res
+
+    async def get_donation_address(self) -> str:
+        # do request
+        res = await self.session.send_request('server.donation_address')
+        # check response
+        if not res:  # ignore empty string
+            return ''
+        if not bitcoin.is_address(res):
+            # note: do not hard-fail -- allow server to use future-type
+            #       bitcoin address we do not recognize
+            self.logger.info(f"invalid donation address from server: {repr(res)}")
+            res = ''
+        return res
+
+    async def get_relay_fee(self) -> int:
+        """Returns the min relay feerate in sat/kbyte."""
+        # do request
+        res = await self.session.send_request('blockchain.relayfee')
+        # check response
+        assert_non_negative_int_or_float(res)
+        relayfee = int(res * bitcoin.COIN)
+        relayfee = max(0, relayfee)
+        return relayfee
+
+    async def get_estimatefee(self, num_blocks: int) -> int:
+        """Returns a feerate estimate for getting confirmed within
+        num_blocks blocks, in sat/kbyte.
+        """
+        if not is_non_negative_integer(num_blocks):
+            raise Exception(f"{repr(num_blocks)} is not a num_blocks")
+        # do request
+        res = await self.session.send_request('blockchain.estimatefee', [num_blocks])
+        # check response
+        if res != -1:
+            assert_non_negative_int_or_float(res)
+            res = int(res * bitcoin.COIN)
+        return res
 
 
 def _assert_header_does_not_check_against_any_chain(header: dict) -> None:
