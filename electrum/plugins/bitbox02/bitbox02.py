@@ -203,7 +203,7 @@ class BitBox02Client(HardwareClientBase):
         derivation = get_derivation_used_for_hw_device_encryption()
         derivation_list = bip32.convert_bip32_path_to_list_of_uint32(derivation)
         xpub = self.bitbox02_device.electrum_encryption_key(derivation_list)
-        node = bip32.BIP32Node.from_xkey(xpub, net = constants.RadiocoinMainnet()).subkey_at_public_derivation(())
+        node = bip32.BIP32Node.from_xkey(xpub, net = constants.DogecoinMainnet()).subkey_at_public_derivation(())
         return node.eckey.get_public_key_bytes(compressed=True).hex()
 
     @runs_in_hwd_thread

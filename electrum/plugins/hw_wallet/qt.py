@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- mode: python -*-
 #
-# Electrum - lightweight Radiocoin client
+# Electrum - lightweight Dogecoin client
 # Copyright (C) 2016  The Electrum developers
 #
 # Permission is hereby granted, free of charge, to any person
@@ -40,7 +40,7 @@ from electrum.gui.qt.installwizard import InstallWizard
 
 from electrum.i18n import _
 from electrum.logging import Logger
-from electrum.util import parse_URI, InvalidRadiocoinURI, UserCancelled, UserFacingException
+from electrum.util import parse_URI, InvalidDogecoinURI, UserCancelled, UserFacingException
 from electrum.plugin import hook, DeviceUnpairableError
 
 from .plugin import OutdatedHwFirmwareException, HW_PluginBase, HardwareHandlerBase

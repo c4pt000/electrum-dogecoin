@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Electrum - lightweight Radiocoin client
+# Electrum - lightweight Dogecoin client
 # Copyright (C) 2015 Thomas Voegtlin
 #
 # Permission is hereby granted, free of charge, to any person
@@ -157,7 +157,7 @@ class InvoiceList(MyTreeView):
             menu.addAction(_("Details"), lambda: self.parent.show_lightning_invoice(invoice))
         else:
             if len(invoice.outputs) == 1:
-                menu.addAction(_("Copy Address"), lambda: self.parent.do_copy(invoice.get_address(), title='Radiocoin Address'))
+                menu.addAction(_("Copy Address"), lambda: self.parent.do_copy(invoice.get_address(), title='Dogecoin Address'))
             menu.addAction(_("Details"), lambda: self.parent.show_onchain_invoice(invoice))
         status = wallet.get_invoice_status(invoice)
         if status == PR_UNPAID:

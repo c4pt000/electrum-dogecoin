@@ -88,10 +88,10 @@ setup(
     include_package_data=True,
     scripts=['electrum/electrum'],
     data_files=data_files,
-    description="Lightweight Radiocoin Wallet",
+    description="Lightweight Dogecoin Wallet",
     author="Thomas Voegtlin",
     author_email="thomasv@electrum.org",
     license="MIT Licence",
     url="https://electrum.org",
-    long_description="""Lightweight Radiocoin Wallet""",
+    long_description="""Lightweight Dogecoin Wallet""",
 )

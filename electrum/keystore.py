@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- mode: python -*-
 #
-# Electrum - lightweight Radiocoin client
+# Electrum - lightweight Dogecoin client
 # Copyright (C) 2016  The Electrum developers
 #
 # Permission is hereby granted, free of charge, to any person

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Electron Cash - lightweight Radiocoin client
+# Electron Cash - lightweight Dogecoin client
 # Copyright (C) 2019 Axel Gembe <derago@gmail.com>
 #
 # Permission is hereby granted, free of charge, to any person

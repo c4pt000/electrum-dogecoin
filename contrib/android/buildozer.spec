@@ -1,10 +1,10 @@
 [app]
 
 # (str) Title of your application
-title = Electrum-RADC
+title = Electrum-DOGE
 
 # (str) Package name
-package.name = Radiocoin
+package.name = Dogecoin
 
 # (str) Package domain (needed for android/ios packaging)
 package.domain = org.electrum

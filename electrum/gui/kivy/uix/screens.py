@@ -15,7 +15,7 @@ from electrum.invoices import (PR_TYPE_ONCHAIN, PR_TYPE_LN, PR_DEFAULT_EXPIRATIO
                                LNInvoice, pr_expiration_values, Invoice, OnchainInvoice)
 from electrum import bitcoin, constants
 from electrum.transaction import tx_from_any, PartialTxOutput
-from electrum.util import (parse_URI, InvalidRadiocoinURI, TxMinedInfo, maybe_extract_bolt11_invoice,
+from electrum.util import (parse_URI, InvalidDogecoinURI, TxMinedInfo, maybe_extract_bolt11_invoice,
                            InvoiceError, format_time, parse_max_spend)
 from electrum.lnaddr import lndecode, LnInvoiceException
 from electrum.logging import Logger
@@ -181,7 +181,7 @@ class SendScreen(CScreen, Logger):
     def set_bip21(self, text: str):
         try:
             uri = parse_URI(text, self.app.on_pr, loop=self.app.asyncio_loop)
-        except InvalidRadiocoinURI as e:
+        except InvalidDogecoinURI as e:
             self.app.show_info(_("Error parsing URI") + f":\n{e}")
             return
         self.parsed_URI = uri
@@ -297,7 +297,7 @@ class SendScreen(CScreen, Logger):
     def read_invoice(self):
         address = str(self.address)
         if not address:
-            self.app.show_error(_('Recipient not specified.') + ' ' + _('Please scan a Radiocoin address or a payment request'))
+            self.app.show_error(_('Recipient not specified.') + ' ' + _('Please scan a Dogecoin address or a payment request'))
             return
         if not self.amount:
             self.app.show_error(_('Please enter an amount'))
@@ -319,7 +319,7 @@ class SendScreen(CScreen, Logger):
                     outputs = self.payment_request.get_outputs()
                 else:
                     if not bitcoin.is_address(address):
-                        self.app.show_error(_('Invalid Radiocoin Address') + ':\n' + address)
+                        self.app.show_error(_('Invalid Dogecoin Address') + ':\n' + address)
                         return
                     outputs = [PartialTxOutput.from_address_and_value(address, amount)]
                 return self.app.wallet.create_invoice(

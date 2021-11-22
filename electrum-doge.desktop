@@ -2,13 +2,13 @@
 # sudo desktop-file-install electrum.desktop
 
 [Desktop Entry]
-Comment=Lightweight Radiocoin Client
+Comment=Lightweight Dogecoin Client
 Exec=sh -c "PATH=\"\\$HOME/.local/bin:\\$PATH\"; electrum %u"
-GenericName[en_US]=Radiocoin Wallet
-GenericName=Radiocoin Wallet
+GenericName[en_US]=Dogecoin Wallet
+GenericName=Dogecoin Wallet
 Icon=electrum
-Name[en_US]=Electrum Radiocoin Wallet
-Name=Electrum Radiocoin Wallet
+Name[en_US]=Electrum Dogecoin Wallet
+Name=Electrum Dogecoin Wallet
 Categories=Finance;Network;
 StartupNotify=true
 StartupWMClass=electrum

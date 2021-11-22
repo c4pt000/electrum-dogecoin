@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
-# Electrum-RADC - lightweight Radiocoin client
-# Copyright (C) 2018 Radiocoin Developers
+# Electrum-RADC - lightweight Dogecoin client
+# Copyright (C) 2018 Dogecoin Developers
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -197,7 +197,7 @@ def identifier_to_namespace(identifier_bytes: bytes) -> Optional[str]:
 
         # Max id/ identifier length is 255 chars according to wiki spec.  But we
         # don't need to check for this, because that's also the max length of an
-        # identifier under the Radiocoin consensus rules.
+        # identifier under the Dogecoin consensus rules.
 
         # Same as d/ regex but without IDN prefix.
         # TODO: this doesn't exactly match the https://wiki.namecoin.org spec.

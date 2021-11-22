@@ -153,7 +153,7 @@ class ExchangeBase(Logger):
         return sorted([str(a) for (a, b) in rates.items() if b is not None and len(a)==3])
 
 
-class RadiocoinAverage(ExchangeBase):
+class BitcoinAverage(ExchangeBase):
     # note: historical rates used to be freely available
     # but this is no longer the case. see #5188
 
@@ -163,14 +163,14 @@ class RadiocoinAverage(ExchangeBase):
                      for r in json if r != 'timestamp'])
 
 
-class Radiocointoyou(ExchangeBase):
+class Bitcointoyou(ExchangeBase):
 
     async def get_rates(self, ccy):
         json = await self.get_json('bitcointoyou.com', "/API/ticker.aspx")
         return {'BRL': Decimal(json['ticker']['last'])}
 
 
-class RadiocoinVenezuela(ExchangeBase):
+class BitcoinVenezuela(ExchangeBase):
 
     async def get_rates(self, ccy):
         json = await self.get_json('api.bitcoinvenezuela.com', '/')
@@ -351,7 +351,7 @@ class Kraken(ExchangeBase):
                      for k, v in json['result'].items())
 
 
-class LocalRadiocoins(ExchangeBase):
+class LocalBitcoins(ExchangeBase):
 
     async def get_rates(self, ccy):
         json = await self.get_json('localbitcoins.com',
@@ -359,7 +359,7 @@ class LocalRadiocoins(ExchangeBase):
         return dict([(r, Decimal(json[r]['rates']['last'])) for r in json])
 
 
-class MercadoRadiocoin(ExchangeBase):
+class MercadoBitcoin(ExchangeBase):
 
     async def get_rates(self, ccy):
         json = await self.get_json('api.bitvalor.com', '/v1/ticker.json')

@@ -1,4 +1,4 @@
-# Electrum - lightweight Radiocoin client
+# Electrum - lightweight Dogecoin client
 # Copyright (C) 2015 Thomas Voegtlin
 #
 # Permission is hereby granted, free of charge, to any person
@@ -2315,7 +2315,7 @@ class Abstract_Wallet(AddressSynchronizer, ABC):
             addr = req.get_address()
             if sanity_checks:
                 if not bitcoin.is_address(addr):
-                    raise Exception(_('Invalid Radiocoin address.'))
+                    raise Exception(_('Invalid Dogecoin address.'))
                 if not self.is_mine(addr):
                     raise Exception(_('Address not in wallet.'))
             key = addr

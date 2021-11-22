@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Electrum - lightweight Radiocoin client
+# Electrum - lightweight Dogecoin client
 # Copyright (2019) The Electrum Developers
 #
 # Permission is hereby granted, free of charge, to any person
@@ -144,7 +144,7 @@ class ConfirmTxDialog(TxEditor, WindowModalDialog):
         grid.addWidget(HelpLabel(_("Amount to be sent") + ": ", msg), 0, 0)
         grid.addWidget(self.amount_label, 0, 1)
 
-        msg = _('Radiocoin transactions are in general not free. A transaction fee is paid by the sender of the funds.') + '\n\n'\
+        msg = _('Dogecoin transactions are in general not free. A transaction fee is paid by the sender of the funds.') + '\n\n'\
               + _('The amount of fee can be decided freely by the sender. However, transactions with low fees take more time to be processed.') + '\n\n'\
               + _('A suggested fee is automatically added to this field. You may override it. The suggested fee increases with the size of the transaction.')
         self.fee_label = QLabel('')

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Electrum - lightweight Radiocoin client
+# Electrum - lightweight Dogecoin client
 # Copyright (C) 2011 thomasv@gitorious
 #
 # Permission is hereby granted, free of charge, to any person
@@ -218,7 +218,7 @@ def int_to_hex(i: int, length: int=1) -> str:
     return rev_hex(s)
 
 def script_num_to_hex(i: int) -> str:
-    """See CScriptNum in Radiocoin Core.
+    """See CScriptNum in Dogecoin Core.
     Encodes an integer as hex, to be used in script.
 
     ported from https://github.com/bitcoin/bitcoin/blob/8cbc5c4be4be22aca228074f087a374a7ec38be8/src/script/script.h#L326
@@ -558,7 +558,7 @@ def base_encode(v: bytes, *, base: int) -> str:
         result.append(chars[mod])
         long_value = div
     result.append(chars[long_value])
-    # Radiocoin does a little leading-zero-compression:
+    # Dogecoin does a little leading-zero-compression:
     # leading 0-bytes in the input become leading-1s
     nPad = 0
     for c in v:

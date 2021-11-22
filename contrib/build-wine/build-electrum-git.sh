@@ -12,7 +12,7 @@ set -e
 
 pushd $WINEPREFIX/drive_c/electrum
 
-VERSION=radiocoin-win10
+VERSION=dogecoin-win10
 info "Last commit: $VERSION"
 
 # Load electrum-locale for this release

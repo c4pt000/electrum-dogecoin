@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- mode: python -*-
 #
-# Electrum - lightweight Radiocoin client
+# Electrum - lightweight Dogecoin client
 # Copyright (C) 2011 thomasv@gitorious
 #
 # Permission is hereby granted, free of charge, to any person
@@ -313,7 +313,7 @@ def main():
     # config is an object passed to the various constructors (wallet, interface, gui)
     if is_android:
         from jnius import autoclass
-        build_config = autoclass("org.electrum.radiocoin.BuildConfig")
+        build_config = autoclass("org.electrum.Dogecoin.BuildConfig")
         config_options = {
             'verbosity': '*' if build_config.DEBUG else '',
             'cmd': 'gui',

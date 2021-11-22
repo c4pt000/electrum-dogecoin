@@ -172,7 +172,7 @@
     "Bitbank": [
         "JPY"
     ],
-    "RadiocoinAverage": [
+    "BitcoinAverage": [
         "AED",
         "AFN",
         "ALL",
@@ -341,7 +341,7 @@
         "ZMW",
         "ZWL"
     ],
-    "RadiocoinVenezuela": [
+    "BitcoinVenezuela": [
         "ARS",
         "ETH",
         "EUR",
@@ -350,7 +350,7 @@
         "VEF",
         "XMR"
     ],
-    "Radiocointoyou": [
+    "Bitcointoyou": [
         "BRL"
     ],
     "Bitso": [
@@ -803,7 +803,7 @@
         "JPY",
         "USD"
     ],
-    "LocalRadiocoins": [
+    "LocalBitcoins": [
         "AED",
         "ARS",
         "AUD",
@@ -882,7 +882,7 @@
         "XRP",
         "ZAR"
     ],
-    "MercadoRadiocoin": [
+    "MercadoBitcoin": [
         "BRL"
     ],
     "TheRockTrading": [

@@ -64,7 +64,7 @@ FEERATE_STATIC_VALUES = [
 
 
 
-# Regtest feerate doesn't need Radiocoin's 100x adjustment.
+# Regtest feerate doesn't need Dogecoin's 100x adjustment.
 FEERATE_REGTEST_HARDCODED = 180000  # for eclair compat
 
 FEE_RATIO_HIGH_WARNING = 0.05  # warn user if fee/amount for on-chain tx is higher than this

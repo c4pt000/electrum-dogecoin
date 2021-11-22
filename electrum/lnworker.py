@@ -404,9 +404,9 @@ class LNWorker(Logger, NetworkRetryManager[LNPeerAddr]):
                 return [peer]
 
         # getting desperate... let's try hardcoded fallback list of peers
-        if constants.net in (constants.RadiocoinTestnet,):
+        if constants.net in (constants.DogecoinTestnet,):
             fallback_list = FALLBACK_NODE_LIST_TESTNET
-        elif constants.net in (constants.RadiocoinMainnet,):
+        elif constants.net in (constants.DogecoinMainnet,):
             fallback_list = FALLBACK_NODE_LIST_MAINNET
         else:
             return []  # regtest??
@@ -1537,7 +1537,7 @@ class LNWallet(LNWorker):
             # for trampoline mpp payments we have to restrict ourselves to pay
             # to a single node due to some incompatibility in Eclair, see:
             # https://github.com/ACINQ/eclair/issues/1723
-            use_singe_node = not self.channel_db and constants.net is constants.RadiocoinMainnet
+            use_singe_node = not self.channel_db and constants.net is constants.DogecoinMainnet
             split_configurations = suggest_splits(amount_msat, channels_with_funds, single_node=use_singe_node)
             self.logger.info(f'suggest_split {amount_msat} returned {len(split_configurations)} configurations')
 
@@ -2097,7 +2097,7 @@ class LNWallet(LNWorker):
     def current_feerate_per_kw(self):
         from .simple_config import FEE_LN_ETA_TARGET, FEERATE_FALLBACK_STATIC_FEE, FEERATE_REGTEST_HARDCODED
         from .simple_config import FEERATE_PER_KW_MIN_RELAY_LIGHTNING
-        if constants.net is constants.RadiocoinRegtest:
+        if constants.net is constants.DogecoinRegtest:
             return FEERATE_REGTEST_HARDCODED // 4
         feerate_per_kvbyte = self.network.config.eta_target_to_fee(FEE_LN_ETA_TARGET)
         if feerate_per_kvbyte is None:
