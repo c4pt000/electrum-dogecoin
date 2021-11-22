@@ -117,7 +117,7 @@ class BitcoinMainnet(AbstractNet):
 ]
 
     AUXPOW_CHAIN_ID = 0x00620004
-    AUXPOW_START_HEIGHT = 0
+    AUXPOW_START_HEIGHT = 371337
 
     NAME_EXPIRATION = 60
 

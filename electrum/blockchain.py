@@ -36,9 +36,9 @@ from .logging import get_logger, Logger
 
 _logger = get_logger(__name__)
 
+#HEADER_SIZE = 80  # bytes
 HEADER_SIZE = 80  # bytes
-MAX_TARGET = 0x00000000FFFF0000000000000000000000000000000000000000000000000000
-
+MAX_TARGET = 0x00000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
 
 class MissingHeader(Exception):
     pass
@@ -58,8 +58,8 @@ def serialize_header(header_dict: dict) -> str:
 def deserialize_header(s: bytes, height: int) -> dict:
     if not s:
         raise InvalidHeader('Invalid header: {}'.format(s))
-    if len(s) != HEADER_SIZE:
-        raise InvalidHeader('Invalid header length: {}'.format(len(s)))
+   # if len(s) != HEADER_SIZE:
+    #    raise InvalidHeader('Invalid header length: {}'.format(len(s)))
     hex_to_int = lambda s: int.from_bytes(s, byteorder='little')
     h = {}
     h['version'] = hex_to_int(s[0:4])
