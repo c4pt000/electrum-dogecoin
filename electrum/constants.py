@@ -129,7 +129,7 @@ class BitcoinTestnet(AbstractNet):
     WIF_PREFIX = 239
     ADDRTYPE_P2PKH = 111
     ADDRTYPE_P2SH = 196
-    SEGWIT_HRP = "xradc"
+    SEGWIT_HRP = "xdoge"
     GENESIS = "00000a2ee9363d21e47bc10d5b1e39d4ae4bd950491790e522f90dad86d2d1eb"
 #    GENESIS = "00000007199508e34a9ff81e6ec0c477a4cccff2a4767a8eee39c11db367b008"
     DEFAULT_PORTS = {'t': '51001', 's': '51002'}

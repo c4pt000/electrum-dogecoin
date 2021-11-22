@@ -9,7 +9,7 @@ from .i18n import _
 from .util import age, InvoiceError
 #from .lnaddr import lndecode, LnAddr
 from . import constants
-from .bitcoin import COIN, TOTAL_COIN_SUPPLY_LIMIT_IN_RADC
+from .bitcoin import COIN, TOTAL_COIN_SUPPLY_LIMIT_IN_DOGE
 from .transaction import PartialTxOutput
 
 if TYPE_CHECKING:
@@ -133,7 +133,7 @@ class OnchainInvoice(Invoice):
     @amount_sat.validator
     def _validate_amount(self, attribute, value):
         if isinstance(value, int):
-            if not (0 <= value <= TOTAL_COIN_SUPPLY_LIMIT_IN_RADC * COIN):
+            if not (0 <= value <= TOTAL_COIN_SUPPLY_LIMIT_IN_DOGE * COIN):
                 raise InvoiceError(f"amount is out-of-bounds: {value!r} sat")
         elif isinstance(value, str):
             if value != '!':
@@ -172,7 +172,7 @@ class LNInvoice(Invoice):
         if value is None:
             return
         if isinstance(value, int):
-            if not (0 <= value <= TOTAL_COIN_SUPPLY_LIMIT_IN_RADC * COIN * 1000):
+            if not (0 <= value <= TOTAL_COIN_SUPPLY_LIMIT_IN_DOGE * COIN * 1000):
                 raise InvoiceError(f"amount is out-of-bounds: {value!r} msat")
         else:
             raise InvoiceError(f"unexpected amount: {value!r}")

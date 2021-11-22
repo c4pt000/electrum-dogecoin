@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Electrum-RADC - lightweight Dogecoin client
+# Electrum-DOGE - lightweight Dogecoin client
 # Copyright (C) 2018 The Dogecoin developers
 #
 # License for all components not part of Electrum-DOGE:

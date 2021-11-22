@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Electrum-RADC - lightweight Dogecoin client
+# Electrum-DOGE - lightweight Dogecoin client
 # Copyright (C) 2018 Dogecoin Developers
 #
 # Permission is hereby granted, free of charge, to any person

@@ -75,7 +75,7 @@ class BitcoinMainnet(AbstractNet):
     WIF_PREFIX = 158
     ADDRTYPE_P2PKH = 60
     ADDRTYPE_P2SH = 22
-    SEGWIT_HRP = "radc"
+    SEGWIT_HRP = "doge"
     BOLT11_HRP = SEGWIT_HRP
     GENESIS = "000007ce46e6c59844c34fa7ba5b27c8dac0653a27fcfb7340cc0158849e4afd"
     DEFAULT_PORTS = {'t': '50001', 's': '50002'}
