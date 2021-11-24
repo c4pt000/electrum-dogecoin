@@ -1,4 +1,4 @@
-
+# 11-23-2021 working send / receive 
 # 11-23-2021 (fixed server side , HAD no DOGE to test binance.us delay up to 5 days?)
 
 # need to adjust main QR code workaround 
