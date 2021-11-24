@@ -1005,7 +1005,7 @@ class ElectrumWindow(App, Logger):
 
     def format_fee_rate(self, fee_rate):
         # fee_rate is in sat/kB
-        return format_fee_satoshis(fee_rate/1000) + ' radiowaves/byte'
+        return format_fee_satoshis(fee_rate/1000) + ' doggies/byte'
 
     #@profiler
     def update_wallet(self, *dt):
