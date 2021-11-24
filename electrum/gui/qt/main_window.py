@@ -791,14 +791,14 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         if d:
  #           host = self.network.get_parameters().server.host
 #            self.pay_to_URI('uraniumx:%s?message=donation for %s'%(d, host))
-            self.show_error(_('zelle payment $1.00 or $10.00 usd (whatever you feel like) @ harley0006@gmail.com'))
+            self.show_error(_('zelle payment or google pay $1.00 or $10.00 usd (whatever you feel like) @ harley0006@gmail.com'))
         else:
-            self.show_error(_('zelle payment $1.00 or $10.00 usd (whatever you feel like) @ harley0006@gmail.com'))
+            self.show_error(_('zelle payment or google pay $1.00 or $10.00 usd (whatever you feel like) @ harley0006@gmail.com'))
 #            self.show_error(_('No donation address for this server'))
 
 
     def show_about(self):
-        QMessageBox.about(self, "Electrum-RADC",
+        QMessageBox.about(self, "Electrum-DOGE",
                           (_("Version")+" %s" % ELECTRUM_VERSION + "\n\n" +
                            _("Electrum's focus is speed, with low resource usage and simplifying Dogecoin.") + " " +
                            _("You do not need to perform regular backups, because your wallet can be "
