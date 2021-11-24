@@ -3,6 +3,9 @@
 
 # need to adjust main QR code workaround 
 # todo -> remove ?time= date by unix epoch from address URI label
+```
+date +%s
+```
 ![s1](https://github.com/c4pt000/electrum-dogecoin/releases/download/android/todo-remove-time-from-URI.gif)
 # scan from QR icon (not QR window)
 ![s1](https://github.com/c4pt000/electrum-dogecoin/releases/download/android/scan-from-here.gif)
