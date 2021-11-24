@@ -1,6 +1,11 @@
 
+# 11-23-2021 (fixed server side , HAD no DOGE to test binance.us delay up to 5 days?)
 
-# for android
+![s1](https://github.com/c4pt000/electrum-dogecoin/releases/download/android/scan-from-here.gif)
+
+# for android -> see releases
+
+# https://github.com/c4pt000/electrum-dogecoin/releases/tag/android
 
 ```
 cd /usr/bin
