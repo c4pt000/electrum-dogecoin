@@ -781,11 +781,11 @@ class Abstract_Wallet(AddressSynchronizer, ABC):
         timestamp = None
         exp = None
         if URI:
-            timestamp = URI.get('time')
-            exp = URI.get('exp')
-        timestamp = timestamp or int(time.time())
-        exp = exp or 0
-        _id = bh2u(sha256d(repr(outputs) + "%d" % timestamp))[0:10]
+        #    timestamp = URI.get('time')
+        #    exp = URI.get('exp')
+        #timestamp = timestamp or int(time.time())
+        #exp = exp or 0
+             _id = bh2u(sha256d(repr(outputs) + "%d" % timestamp))[0:10]
         invoice = OnchainInvoice(
             type=PR_TYPE_ONCHAIN,
             amount_sat=amount,
@@ -2195,10 +2195,10 @@ class Abstract_Wallet(AddressSynchronizer, ABC):
         message = self.get_label(addr)
         amount = req.amount_sat
         extra_query_params = {}
-        if req.time:
-            extra_query_params['time'] = str(int(req.time))
-        if req.exp:
-            extra_query_params['exp'] = str(int(req.exp))
+        #if req.time:
+        #    extra_query_params['time'] = str(int(req.time))
+        #if req.exp:
+        #    extra_query_params['exp'] = str(int(req.exp))
         # if req.get('name') and req.get('sig'):
         #    sig = bfh(req.get('sig'))
         #    sig = bitcoin.base_encode(sig, base=58)
